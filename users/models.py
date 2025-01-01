@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from datetime import date
 from places.models import District
+from django.contrib.postgres.fields import ArrayField
 
 
 class MembershipType(models.Model):
@@ -47,8 +48,24 @@ class Membership(models.Model):
     end_date = models.DateTimeField()
 
     def __str__(self):
-        return self.user.first_name + self.user.last_name + ": " + self.membership_type.name + ". " + str(self.start_date) + " -> " + str(self.end_date)
+        return self.user.first_name + " " + self.user.last_name + ": " + self.membership_type.name + ". " + str(self.start_date) + " -> " + str(self.end_date)
 
     class Meta:
         db_table = "memberships"
         db_table_comment = "Table that contains membership information of users for AllerGeo"
+
+
+class Travel(models.Model):
+    user = models.ForeignKey(AllergicUser, on_delete=models.PROTECT, default=None, db_column="user_id")
+    path = ArrayField(models.IntegerField(), blank=True, default=list)
+    creation_date = models.DateTimeField(auto_now_add=True)
+    start_date = models.DateTimeField()
+    return_date = models.DateTimeField()
+
+    def __str__(self):
+        return (self.user.first_name + " " + self.user.last_name + " - " +
+                str(self.start_date.day) + "/" + str(self.start_date.month) + "/" + str(self.start_date.year))
+
+    class Meta:
+        db_table = "travels"
+        db_table_comment = "Table that contains travel information of users for AllerGeo"

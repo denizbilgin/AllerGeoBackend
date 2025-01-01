@@ -38,7 +38,9 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     "users",
-    "places.apps.PlacesConfig"
+    "places",
+    "allergies",
+    "predictor"
 ]
 
 MIDDLEWARE = [
