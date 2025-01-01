@@ -5,7 +5,7 @@ from users.models import AllergicUser
 
 
 class AllergenType(models.Model):
-    name = models.CharField(255)
+    name = models.CharField(max_length=255)
 
     def __str__(self):
         return self.name
@@ -16,8 +16,8 @@ class AllergenType(models.Model):
 
 
 class Allergen(models.Model):
-    name = models.CharField(255)
-    description = models.CharField(255)
+    name = models.CharField(max_length=255)
+    description = models.TextField(blank=True, null=True)
     allergen_type = models.ForeignKey(AllergenType, on_delete=models.PROTECT, default=None, db_column="allergen_type_id")
 
     def __str__(self):
@@ -29,8 +29,8 @@ class Allergen(models.Model):
 
 
 class CommonRegion(models.Model):
-    name = models.CharField(255)
-    description = models.CharField(255)
+    name = models.CharField(max_length=255)
+    description = models.TextField(blank=True, null=True)
 
     def __str__(self):
         return self.name
@@ -71,7 +71,7 @@ class AllergyAttack(models.Model):
     district = models.ForeignKey(District, on_delete=models.PROTECT, default=None, db_column="district_id")
     date = models.DateTimeField()
     allergen = models.ForeignKey(Allergen, on_delete=models.PROTECT, default=None, db_column="allergen_id")
-    notes = models.CharField(255)
+    notes = models.TextField(blank=True, null=True)
 
     def __str__(self):
         return (self.user.first_name + " " + self.user.last_name + " - " + self.allergen.name +

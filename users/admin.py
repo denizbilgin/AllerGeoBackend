@@ -1,3 +1,8 @@
 from django.contrib import admin
 
-# Register your models here.
+from users.models import *
+
+admin.site.register(MembershipType)
+admin.site.register(AllergicUser)
+admin.site.register(Membership)
+admin.site.register(Travel)

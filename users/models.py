@@ -18,7 +18,7 @@ class MembershipType(models.Model):
 
 
 class AllergicUser(AbstractUser):
-    photo = models.ImageField(upload_to="profile_photos/", blank=True)
+    photo = models.ImageField(upload_to="profile_photos/", blank=True, null=True)
     date_joined = models.DateTimeField(auto_now_add=True)
     residence_district = models.ForeignKey(District, on_delete=models.PROTECT, default=None,
                                            db_column="residence_district_id")
@@ -60,7 +60,7 @@ class Travel(models.Model):
     path = ArrayField(models.IntegerField(), blank=True, default=list)
     creation_date = models.DateTimeField(auto_now_add=True)
     start_date = models.DateTimeField()
-    return_date = models.DateTimeField()
+    return_date = models.DateTimeField(blank=True, null=True)
 
     def __str__(self):
         return (self.user.first_name + " " + self.user.last_name + " - " +

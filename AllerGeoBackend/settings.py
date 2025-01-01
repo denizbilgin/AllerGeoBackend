@@ -40,7 +40,7 @@ INSTALLED_APPS = [
     "users",
     "places",
     "allergies",
-    "predictor"
+    "predictors"
 ]
 
 MIDDLEWARE = [
@@ -78,7 +78,7 @@ WSGI_APPLICATION = 'AllerGeoBackend.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
-with open("database_config.json") as config_file:
+with open("AllerGeoBackend/database_config.json") as config_file:
     db_config = json.load(config_file)
 
 DATABASES = {
