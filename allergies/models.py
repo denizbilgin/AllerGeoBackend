@@ -56,7 +56,7 @@ class UserAllergy(models.Model):
     user = models.ForeignKey(AllergicUser, on_delete=models.PROTECT, default=None, db_column="user_id")
     allergen = models.ForeignKey(Allergen, on_delete=models.PROTECT, default=None, db_column="allergen_id")
     creation_date = models.DateTimeField(auto_now_add=True)
-    importance_level = models.IntegerField()
+    importance_level = models.IntegerField(default=1)
 
     def __str__(self):
         return self.user.first_name + " " + self.user.last_name + " - " + self.allergen.name
