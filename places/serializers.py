@@ -7,6 +7,9 @@ class PlaceSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
     def validate(self, attrs):
+        if self.partial:
+            return attrs
+
         if attrs["northeast_latitude"] <= attrs['southwest_latitude']:
             raise serializers.ValidationError({
                 'northeast_latitude': 'Northeast latitude must be greater than southwest latitude.'
@@ -24,7 +27,8 @@ class CitySerializer(PlaceSerializer):
 
 
 class DistrictSerializer(PlaceSerializer):
-    city = CitySerializer()
+    city = CitySerializer(read_only=True)
+    city_id = serializers.IntegerField(write_only=True)
 
     class Meta(PlaceSerializer.Meta):
         model = District

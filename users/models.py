@@ -2,7 +2,6 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from datetime import date
 from places.models import District
-from django.contrib.postgres.fields import ArrayField
 
 
 class MembershipType(models.Model):
@@ -57,7 +56,6 @@ class Membership(models.Model):
 
 class Travel(models.Model):
     user = models.ForeignKey(AllergicUser, on_delete=models.PROTECT, default=None, db_column="user_id")
-    path = ArrayField(models.IntegerField(), blank=True, default=list)
     creation_date = models.DateTimeField(auto_now_add=True)
     start_date = models.DateTimeField()
     return_date = models.DateTimeField(blank=True, null=True)

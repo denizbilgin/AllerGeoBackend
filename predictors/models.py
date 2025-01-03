@@ -1,7 +1,7 @@
 from django.db import models
 
 from places.models import District
-from users.models import AllergicUser
+from users.models import AllergicUser, Travel
 
 
 class AIModel(models.Model):
@@ -27,9 +27,10 @@ class AIAllergyAttackPrediction(models.Model):
     ai_prediction = models.FloatField(blank=True, null=True)
     had_allergy_attack = models.BooleanField(blank=True, null=True)
     model = models.ForeignKey(AIModel, on_delete=models.PROTECT, default=None, db_column="model_id")
+    travel = models.ForeignKey(Travel, on_delete=models.PROTECT, default=None, null=True)
 
     def __str__(self):
-        return str(self.ai_prediction) + " - " + str(self.had_allergy_attack)
+        return str(self.ai_prediction) + " - " + str(self.had_allergy_attack) + ": model name is " + self.model.name
 
     class Meta:
         db_table = "ai_allergy_attack_predictions"
