@@ -1,4 +1,5 @@
 from rest_framework.viewsets import ViewSet
+from AllerGeoBackend.utilities import turkish_uppercase, find_similar_place
 from .models import *
 from rest_framework.response import Response
 from drf_yasg.utils import swagger_auto_schema
@@ -51,6 +52,17 @@ class CityView(ViewSet):
             city = City.objects.get(pk=pk)
             city.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
+        except City.DoesNotExist:
+            return Response({"Error": "City not found."}, status=status.HTTP_404_NOT_FOUND)
+
+    @swagger_auto_schema(responses={200: CitySerializer, 404: "City not found."})
+    def retrieve_by_name(self, request, name=None):
+        name = turkish_uppercase(name)
+        try:
+            name = find_similar_place(name).strip()
+            city = City.objects.get(name=name)
+            serialized_item = CitySerializer(city)
+            return Response(serialized_item.data, status=status.HTTP_200_OK)
         except City.DoesNotExist:
             return Response({"Error": "City not found."}, status=status.HTTP_404_NOT_FOUND)
 
@@ -129,5 +141,16 @@ class DistrictView(ViewSet):
             district = District.objects.get(pk=pk)
             district.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
+        except District.DoesNotExist:
+            return Response({"Error": "District not found."}, status=status.HTTP_404_NOT_FOUND)
+
+    @swagger_auto_schema(responses={200: DistrictSerializer, 404: "District not found."})
+    def retrieve_by_name(self, request, name=None):
+        name = turkish_uppercase(name)
+        try:
+            name = find_similar_place(name).strip()
+            district = District.objects.get(name=name)
+            serialized_item = DistrictSerializer(district)
+            return Response(serialized_item.data, status=status.HTTP_200_OK)
         except District.DoesNotExist:
             return Response({"Error": "District not found."}, status=status.HTTP_404_NOT_FOUND)
