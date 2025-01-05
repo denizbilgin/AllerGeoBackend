@@ -175,3 +175,129 @@ class AllergenRegionView(ViewSet):
             return Response({"Error": "Allergen not found."}, status=status.HTTP_404_NOT_FOUND)
         except AllergenRegion.DoesNotExist:
             return Response({"Error": "Given Allergen does not contain given Allergen Region."}, status=status.HTTP_404_NOT_FOUND)
+
+
+class UserAllergyView(ViewSet):
+    @swagger_auto_schema(responses={200: UserAllergySerializer(many=True), 404: "User not found."})
+    def retrieve_user_allergies(self, request, pk=None):
+        try:
+            user = AllergicUser.objects.get(pk=pk)
+        except AllergicUser.DoesNotExist:
+            return Response({"Error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        user_allergies = UserAllergy.objects.filter(user_id=user.id)
+        serialized_items = UserAllergySerializer(user_allergies, many=True)
+        return Response(serialized_items.data, status=status.HTTP_200_OK)
+
+    @swagger_auto_schema(
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'allergen_id': openapi.Schema(type=openapi.TYPE_INTEGER),
+                'importance_level': openapi.Schema(type=openapi.TYPE_INTEGER)
+            },
+            required=['allergen_id', 'importance_level']),
+        responses={201: UserAllergySerializer, 400: "Invalid Data"})
+    def create(self, request, pk=None):
+        request.data["user_id"] = pk
+        serializer = UserAllergySerializer(data=request.data)
+        if serializer.is_valid():
+            user_allergy = serializer.save()
+            return Response(UserAllergySerializer(user_allergy).data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    @swagger_auto_schema(
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'allergen_id': openapi.Schema(type=openapi.TYPE_INTEGER),
+            },
+            required=['allergen_id']),
+        responses={204: "No Content", 404: "Allergen or User not found.", 400: "common_region_id is required."})
+    def destroy(self, request, pk=None):
+        allergen_id = request.data.get('allergen_id')
+        try:
+            user = AllergicUser.objects.get(pk=pk)
+            allergen = Allergen.objects.get(pk=allergen_id)
+            user_allergy = UserAllergy.objects.get(user=user, allergen=allergen)
+            user_allergy.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except AllergicUser.DoesNotExist:
+            return Response({"Error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+        except Allergen.DoesNotExist:
+            return Response({"Error": "Allergen not found."}, status=status.HTTP_404_NOT_FOUND)
+        except UserAllergy.DoesNotExist:
+            return Response({"Error": "User Allergy not found."}, status=status.HTTP_404_NOT_FOUND)
+
+
+class AllergyAttackView(ViewSet):
+    @swagger_auto_schema(responses={200: AllergyAttackSerializer(many=True), 404: "User not found."})
+    def retrieve_user_allergy_attacks(self, request, pk=None):
+        try:
+            user = AllergicUser.objects.get(pk=pk)
+        except AllergicUser.DoesNotExist:
+            return Response({"Error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        user_allergy_attacks = AllergyAttack.objects.filter(user=user)
+        serialized_items = AllergyAttackSerializer(user_allergy_attacks, many=True)
+        return Response(serialized_items.data, status=status.HTTP_200_OK)
+
+    @swagger_auto_schema(
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'district_id': openapi.Schema(type=openapi.TYPE_INTEGER),
+                'date': openapi.Schema(type=openapi.TYPE_STRING, format=openapi.FORMAT_DATETIME,
+                                       description="Date and time in ISO 8601 format (e.g., 2025-01-05T14:30:00Z)"),
+                "allergen_id": openapi.Schema(type=openapi.TYPE_INTEGER),
+                "notes": openapi.Schema(type=openapi.TYPE_STRING)
+            },
+            required=['district_id', 'date', "allergen_id"]),
+        responses={201: AllergyAttackSerializer, 400: "Invalid Data"})
+    def create(self, request, pk=None):
+        request.data["user_id"] = pk
+        serializer = AllergyAttackSerializer(data=request.data)
+        if serializer.is_valid():
+            user_allergy_attack = serializer.save()
+            return Response(AllergyAttackSerializer(user_allergy_attack).data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    @swagger_auto_schema(
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'district_id': openapi.Schema(type=openapi.TYPE_INTEGER),
+                'date': openapi.Schema(type=openapi.TYPE_STRING, format=openapi.FORMAT_DATETIME,
+                                       description="Date and time in ISO 8601 format (e.g., 2025-01-05T14:30:00Z)"),
+                "allergen_id": openapi.Schema(type=openapi.TYPE_INTEGER),
+                "notes": openapi.Schema(type=openapi.TYPE_STRING)
+            }),
+        responses={201: AllergyAttackSerializer, 400: "Invalid Data"})
+    def partial_update(self, request, pk=None, allergy_attack_id=None):
+        try:
+            user = AllergicUser.objects.get(pk=pk)
+            allergy_attack = AllergyAttack.objects.get(pk=allergy_attack_id, user=user)
+        except AllergicUser.DoesNotExist:
+            return Response({"Error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+        except AllergyAttack.DoesNotExist:
+            return Response({"Error": "Allergy Attack not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = AllergyAttackSerializer(allergy_attack, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    @swagger_auto_schema(responses={204: "No Content", 404: "User or Allergy Attack not found"})
+    def destroy(self, request, pk=None, allergy_attack_id=None):
+        try:
+            user = AllergicUser.objects.get(pk=pk)
+            allergen_attack = AllergyAttack.objects.get(user=user, pk=allergy_attack_id)
+            allergen_attack.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except AllergicUser.DoesNotExist:
+            return Response({"Error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+        except AllergyAttack.DoesNotExist:
+            return Response({"Error": "Allergy Attack not found."}, status=status.HTTP_404_NOT_FOUND)
