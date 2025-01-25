@@ -85,6 +85,5 @@ class AllergyAttack(models.Model):
 # TODO: validatorsları silip bir validate dosyasına topla
 # TODO: Viewlerde bug ara
 # TODO: userin aynı alerjeni bir kere içermesi gibi ve buna benzer durumları kontrol et
-# TODO: items adlandırmasını değiştir
 # TODO: status kodları kontrol et
 # TODO: partialleri kontrol et

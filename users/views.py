@@ -9,6 +9,6 @@ from .serializers import UserSerializer
 class UserView(ViewSet):
     @swagger_auto_schema(responses={200: UserSerializer(many=True)})
     def list(self, request):
-        items = AllergicUser.objects.select_related("residence_district").all()
-        serialized_items = UserSerializer(items, many=True)
-        return Response(serialized_items.data, status=status.HTTP_200_OK)
+        allergic_user = AllergicUser.objects.select_related("residence_district").all()
+        serialized_allergic_user = UserSerializer(allergic_user, many=True)
+        return Response(serialized_allergic_user.data, status=status.HTTP_200_OK)

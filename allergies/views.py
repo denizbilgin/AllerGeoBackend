@@ -19,17 +19,17 @@ class AllergenTypeView(ModelViewSet):
         except AllergenType.DoesNotExist:
             return Response({"error": "Allergen Type not found."}, status=status.HTTP_404_NOT_FOUND)
 
-        items = Allergen.objects.filter(allergen_type=allergen_type)
-        serialized_items = AllergenSerializer(items, many=True)
-        return Response(serialized_items.data, status=status.HTTP_200_OK)
+        filtered_allergens = Allergen.objects.filter(allergen_type=allergen_type)
+        serialized_filtered_allergens = AllergenSerializer(filtered_allergens, many=True)
+        return Response(serialized_filtered_allergens.data, status=status.HTTP_200_OK)
 
 
 class AllergenView(ViewSet):
     @swagger_auto_schema(responses={200: AllergenSerializer(many=True)})
     def list(self, request):
-        items = Allergen.objects.all()
-        serialized_items = AllergenSerializer(items, many=True)
-        return Response(serialized_items.data, status=status.HTTP_200_OK)
+        allergens = Allergen.objects.all()
+        serialized_allergens = AllergenSerializer(allergens, many=True)
+        return Response(serialized_allergens.data, status=status.HTTP_200_OK)
 
     @swagger_auto_schema(
         request_body=openapi.Schema(
@@ -53,8 +53,8 @@ class AllergenView(ViewSet):
     def retrieve(self, request, pk=None):
         try:
             allergen = Allergen.objects.get(pk=pk)
-            serialized_item = AllergenSerializer(allergen)
-            return Response(serialized_item.data, status=status.HTTP_200_OK)
+            serialized_allergen = AllergenSerializer(allergen)
+            return Response(serialized_allergen.data, status=status.HTTP_200_OK)
         except Allergen.DoesNotExist:
             return Response({"Error": "Allergen not found."}, status=status.HTTP_404_NOT_FOUND)
 
@@ -94,8 +94,8 @@ class AllergenView(ViewSet):
         name = turkish_capitalize(name).strip()
         try:
             allergen = Allergen.objects.get(name=name)
-            serialized_item = AllergenSerializer(allergen)
-            return Response(serialized_item.data, status=status.HTTP_200_OK)
+            serialized_allergen = AllergenSerializer(allergen)
+            return Response(serialized_allergen.data, status=status.HTTP_200_OK)
         except Allergen.DoesNotExist:
             return Response({"Error": "Allergen not found."}, status=status.HTTP_404_NOT_FOUND)
 
@@ -109,26 +109,26 @@ class AllergenRegionView(ViewSet):
     @swagger_auto_schema(responses={200: AllergenRegionSerializer, 404: "Allergen not found."})
     def retrieve_by_allergen(self, request, pk=None):
         try:
-            item = Allergen.objects.get(pk=pk)
-            items = AllergenRegion.objects.filter(allergen_id=item.id).select_related("common_region")
-            common_regions = [item.common_region for item in items]
+            allergen = Allergen.objects.get(pk=pk)
+            filtered_allergen_regions = AllergenRegion.objects.filter(allergen_id=allergen.id).select_related("common_region")
+            common_regions = [allergen_region.common_region for allergen_region in filtered_allergen_regions]
         except Allergen.DoesNotExist:
             return Response({"Error": "Allergen not found."}, status=status.HTTP_404_NOT_FOUND)
 
-        serialized_items = CommonRegionSerializer(common_regions, many=True)
-        return Response(serialized_items.data, status=status.HTTP_200_OK)
+        serialized_common_regions = CommonRegionSerializer(common_regions, many=True)
+        return Response(serialized_common_regions.data, status=status.HTTP_200_OK)
 
     @swagger_auto_schema(responses={200: AllergenRegionSerializer, 404: "Common Region not found."})
     def retrieve_by_region(self, request, pk=None):
         try:
-            item = CommonRegion.objects.get(pk=pk)
-            items = AllergenRegion.objects.filter(common_region_id=item.id).select_related("allergen")
-            allergens = [item.allergen for item in items]
+            common_region = CommonRegion.objects.get(pk=pk)
+            filtered_allergen_regions = AllergenRegion.objects.filter(common_region_id=common_region.id).select_related("allergen")
+            allergens = [allergen_region.allergen for allergen_region in filtered_allergen_regions]
         except CommonRegion.DoesNotExist:
             return Response({"Error": "Common Region not found."}, status=status.HTTP_404_NOT_FOUND)
 
-        serialized_items = CommonRegionSerializer(allergens, many=True)
-        return Response(serialized_items.data, status=status.HTTP_200_OK)
+        serialized_common_regions = CommonRegionSerializer(allergens, many=True)
+        return Response(serialized_common_regions.data, status=status.HTTP_200_OK)
 
     @swagger_auto_schema(
         request_body=openapi.Schema(
@@ -186,8 +186,8 @@ class UserAllergyView(ViewSet):
             return Response({"Error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
 
         user_allergies = UserAllergy.objects.filter(user_id=user.id)
-        serialized_items = UserAllergySerializer(user_allergies, many=True)
-        return Response(serialized_items.data, status=status.HTTP_200_OK)
+        serialized_user_allergies = UserAllergySerializer(user_allergies, many=True)
+        return Response(serialized_user_allergies.data, status=status.HTTP_200_OK)
 
     @swagger_auto_schema(
         request_body=openapi.Schema(
@@ -240,8 +240,8 @@ class AllergyAttackView(ViewSet):
             return Response({"Error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
 
         user_allergy_attacks = AllergyAttack.objects.filter(user=user)
-        serialized_items = AllergyAttackSerializer(user_allergy_attacks, many=True)
-        return Response(serialized_items.data, status=status.HTTP_200_OK)
+        serialized_allergy_attacks = AllergyAttackSerializer(user_allergy_attacks, many=True)
+        return Response(serialized_allergy_attacks.data, status=status.HTTP_200_OK)
 
     @swagger_auto_schema(
         request_body=openapi.Schema(

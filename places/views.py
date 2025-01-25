@@ -11,9 +11,9 @@ from drf_yasg import openapi
 class CityView(ViewSet):
     @swagger_auto_schema(responses={200: CitySerializer(many=True)})
     def list(self, request):
-        items = City.objects.all()
-        serialized_items = CitySerializer(items, many=True)
-        return Response(serialized_items.data, status=status.HTTP_200_OK)
+        cities = City.objects.all()
+        serialized_cities = CitySerializer(cities, many=True)
+        return Response(serialized_cities.data, status=status.HTTP_200_OK)
 
     @swagger_auto_schema(request_body=CitySerializer, responses={201: CitySerializer, 400: "Invalid Data"})
     def create(self, request):
@@ -28,8 +28,8 @@ class CityView(ViewSet):
     def retrieve(self, request, pk=None):
         try:
             city = City.objects.get(pk=pk)
-            serialized_item = CitySerializer(city)
-            return Response(serialized_item.data, status=status.HTTP_200_OK)
+            serialized_city = CitySerializer(city)
+            return Response(serialized_city.data, status=status.HTTP_200_OK)
         except City.DoesNotExist:
             return Response({"Error": "City not found."}, status=status.HTTP_404_NOT_FOUND)
 
@@ -61,8 +61,8 @@ class CityView(ViewSet):
         try:
             name = find_similar_place(name).strip()
             city = City.objects.get(name=name)
-            serialized_item = CitySerializer(city)
-            return Response(serialized_item.data, status=status.HTTP_200_OK)
+            serialized_city = CitySerializer(city)
+            return Response(serialized_city.data, status=status.HTTP_200_OK)
         except City.DoesNotExist:
             return Response({"Error": "City not found."}, status=status.HTTP_404_NOT_FOUND)
 
@@ -70,9 +70,9 @@ class CityView(ViewSet):
 class DistrictView(ViewSet):
     @swagger_auto_schema(responses={200: DistrictSerializer(many=True)})
     def list(self, request):
-        items = District.objects.all()
-        serialized_items = DistrictSerializer(items, many=True)
-        return Response(serialized_items.data, status=status.HTTP_200_OK)
+        districts = District.objects.all()
+        serialized_districts = DistrictSerializer(districts, many=True)
+        return Response(serialized_districts.data, status=status.HTTP_200_OK)
 
     @swagger_auto_schema(
         request_body=openapi.Schema(
@@ -102,8 +102,8 @@ class DistrictView(ViewSet):
     def retrieve(self, request, pk=None):
         try:
             district = District.objects.get(pk=pk)
-            serialized_item = DistrictSerializer(district)
-            return Response(serialized_item.data, status=status.HTTP_200_OK)
+            serialized_district = DistrictSerializer(district)
+            return Response(serialized_district.data, status=status.HTTP_200_OK)
         except District.DoesNotExist:
             return Response({"Error": "District not found."}, status=status.HTTP_404_NOT_FOUND)
 
@@ -150,7 +150,7 @@ class DistrictView(ViewSet):
         try:
             name = find_similar_place(name).strip()
             district = District.objects.get(name=name)
-            serialized_item = DistrictSerializer(district)
-            return Response(serialized_item.data, status=status.HTTP_200_OK)
+            serialized_district = DistrictSerializer(district)
+            return Response(serialized_district.data, status=status.HTTP_200_OK)
         except District.DoesNotExist:
             return Response({"Error": "District not found."}, status=status.HTTP_404_NOT_FOUND)
