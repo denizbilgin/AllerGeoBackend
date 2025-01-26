@@ -67,7 +67,7 @@ class AllergenView(ViewSet):
                 'description': openapi.Schema(type=openapi.TYPE_STRING)
             },
             required=['name', 'allergen_type_id', 'description']),
-        responses={201: AllergenSerializer, 400: "Invalid Data"})
+        responses={200: AllergenSerializer, 400: "Invalid Data", 404: "Allergen not found"})
     def partial_update(self, request, pk=None):
         try:
             allergen = Allergen.objects.get(pk=pk)
@@ -214,7 +214,7 @@ class UserAllergyView(ViewSet):
                 'allergen_id': openapi.Schema(type=openapi.TYPE_INTEGER),
             },
             required=['allergen_id']),
-        responses={204: "No Content", 404: "Allergen or User not found.", 400: "common_region_id is required."})
+        responses={204: "No Content", 404: "Allergen, User Allergy or User not found."})
     def destroy(self, request, pk=None):
         allergen_id = request.data.get('allergen_id')
         try:
@@ -274,7 +274,7 @@ class AllergyAttackView(ViewSet):
                 "allergen_id": openapi.Schema(type=openapi.TYPE_INTEGER),
                 "notes": openapi.Schema(type=openapi.TYPE_STRING)
             }),
-        responses={201: AllergyAttackSerializer, 400: "Invalid Data"})
+        responses={200: AllergyAttackSerializer, 400: "Invalid Data", 404: "User or Allergy Attack not found."})
     def partial_update(self, request, pk=None, allergy_attack_id=None):
         try:
             user = AllergicUser.objects.get(pk=pk)

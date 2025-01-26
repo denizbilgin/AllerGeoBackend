@@ -31,12 +31,17 @@ class DistrictSerializer(PlaceSerializer):
     city_id = serializers.IntegerField(write_only=True)
 
     def validate(self, attrs):
-        city_id = attrs.get('city_id')
+        if self.partial:
+            return attrs
 
+        super().validate(attrs)
+
+        city_id = attrs.get('city_id')
         try:
             city = City.objects.get(pk=city_id)
         except City.DoesNotExist:
             raise serializers.ValidationError("Invalid city ID.")
+
         return attrs
 
     class Meta(PlaceSerializer.Meta):

@@ -33,7 +33,7 @@ class CityView(ViewSet):
         except City.DoesNotExist:
             return Response({"Error": "City not found."}, status=status.HTTP_404_NOT_FOUND)
 
-    @swagger_auto_schema(request_body=CitySerializer, responses={201: CitySerializer, 400: "Invalid Data", 404: "City Not Found"})
+    @swagger_auto_schema(request_body=CitySerializer, responses={200: CitySerializer, 400: "Invalid Data", 404: "City Not Found"})
     def partial_update(self, request, pk=None):
         try:
             city = City.objects.get(pk=pk)
@@ -122,7 +122,7 @@ class DistrictView(ViewSet):
             },
             required=['name', 'latitude', 'longitude', 'northeast_latitude', 'northeast_longitude', 'southwest_latitude',
                       "southwest_longitude", "city_id"]),
-        responses={201: DistrictSerializer, 400: "Invalid Data", 404: "District Not Found"})
+        responses={200: DistrictSerializer, 400: "Invalid Data", 404: "District Not Found"})
     def partial_update(self, request, pk=None):
         try:
             district = District.objects.get(pk=pk)

@@ -2,6 +2,8 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from datetime import date
 from places.models import District
+from django.utils.text import slugify
+import os
 
 
 class MembershipType(models.Model):
@@ -17,7 +19,13 @@ class MembershipType(models.Model):
 
 
 class AllergicUser(AbstractUser):
-    photo = models.ImageField(upload_to="profile_photos/", blank=True, null=True)
+    def __user_photo_path(self, filename):
+        name_slug = slugify(f"{self.first_name}_{self.last_name}")
+        extension = os.path.splitext(filename)[1]
+        photo_path = f"{self.id}_{name_slug}{extension}"
+        return f"profile_photos/{photo_path}"
+
+    photo = models.ImageField(upload_to=__user_photo_path, blank=True, null=True)
     date_joined = models.DateTimeField(auto_now_add=True)
     residence_district = models.ForeignKey(District, on_delete=models.PROTECT, default=None,
                                            db_column="residence_district_id")
@@ -31,6 +39,22 @@ class AllergicUser(AbstractUser):
         if (today.month, today.day) < (self.date_of_birth.month, self.date_of_birth.day):
             age -= 1
         return age
+
+    def save(self, *args, **kwargs):
+        if self.pk:
+            try:
+                old_instance = AllergicUser.objects.get(pk=self.pk)
+                if old_instance.photo and old_instance.photo != self.photo:
+                    if os.path.isfile(old_instance.photo.path):
+                        os.remove(old_instance.photo.path)
+            except AllergicUser.DoesNotExist:
+                pass
+        super().save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        if self.photo and os.path.isfile(self.photo.path):
+            os.remove(self.photo.path)
+        super().delete(*args, **kwargs)
 
     def __str__(self):
         return str(self.id) + " - " + self.first_name + " " + self.last_name
