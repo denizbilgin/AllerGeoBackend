@@ -1,7 +1,8 @@
 from typing import AnyStr, Optional, Dict
 from difflib import SequenceMatcher
-
+from django.utils.text import slugify
 from places.models import District
+import os
 
 
 def turkish_lowercase(text: AnyStr) -> AnyStr:
@@ -74,3 +75,10 @@ def find_similar_place(place_name: AnyStr, similarity_threshold: float = 0.3) ->
     if not similar_names:
         return None
     return similar_names[max(similar_names.keys())]
+
+
+def define_user_photo_path(instance, filename: str) -> AnyStr:
+    name_slug = slugify(f"{instance.first_name}_{instance.last_name}")
+    extension = os.path.splitext(filename)[1]
+    photo_path = f"{instance.id}_{name_slug}{extension}"
+    return f"profile_photos/{photo_path}"

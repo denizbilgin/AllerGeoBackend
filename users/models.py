@@ -2,8 +2,7 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from datetime import date
 from places.models import District
-from django.utils.text import slugify
-import os
+from AllerGeoBackend.utilities import define_user_photo_path
 
 
 class MembershipType(models.Model):
@@ -19,13 +18,7 @@ class MembershipType(models.Model):
 
 
 class AllergicUser(AbstractUser):
-    def __user_photo_path(self, filename):
-        name_slug = slugify(f"{self.first_name}_{self.last_name}")
-        extension = os.path.splitext(filename)[1]
-        photo_path = f"{self.id}_{name_slug}{extension}"
-        return f"profile_photos/{photo_path}"
-
-    photo = models.ImageField(upload_to=__user_photo_path, blank=True, null=True)
+    photo = models.ImageField(upload_to=define_user_photo_path, blank=True, null=True)
     date_joined = models.DateTimeField(auto_now_add=True)
     residence_district = models.ForeignKey(District, on_delete=models.PROTECT, default=None,
                                            db_column="residence_district_id")

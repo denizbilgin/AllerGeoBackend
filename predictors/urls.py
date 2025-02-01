@@ -2,5 +2,17 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-
+    path("ai-models", views.AIModelView.as_view({
+        "get": "list",
+        "post": "create"
+    })),
+    path("ai-models/<int:pk>", views.AIModelView.as_view({
+        "get": "retrieve",
+        "patch": "partial_update",
+        #"delete": "destroy"
+    })),
+    path("ai-allergy-attack-predictions", views.AIAllergyAttackPredictionView.as_view({
+        "get": "list",
+        #"post": "create"
+    })),
 ]

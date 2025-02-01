@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from places.serializers import DistrictSerializer
-from users.models import AllergicUser
+from users.models import AllergicUser, Travel
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -30,3 +30,21 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = AllergicUser
         fields = "__all__"
+
+
+class TravelSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Travel
+        fields = "__all__"
+
+    def validate(self, attrs):
+        if self.partial:
+            return attrs
+
+        start_date = attrs.get("start_date")
+        return_date = attrs.get("return_date")
+
+        if return_date and start_date and return_date < start_date:
+            raise serializers.ValidationError("Return date cannot be earlier than start date.")
+
+        return attrs

@@ -82,5 +82,4 @@ class AllergyAttack(models.Model):
         db_table_comment = "Table that contains allergy attack information of users for AllerGeo"
 
 
-# TODO: Viewlerde bug ara
 # TODO: userin aynı alerjeni bir kere içermesi gibi ve buna benzer durumları kontrol et
