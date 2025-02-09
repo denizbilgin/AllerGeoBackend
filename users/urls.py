@@ -2,6 +2,7 @@ from django.urls import path
 from allergies.views import UserAllergyView, AllergyAttackView
 from .views import TravelView
 from . import views
+from predictors.views import AIAllergyAttackPredictionView
 
 urlpatterns = [
     path("", views.UserView.as_view({
@@ -27,5 +28,9 @@ urlpatterns = [
     path("<int:pk>/travels/<int:travel_id>", TravelView.as_view({
         "patch": "partial_update",
         "delete": "destroy",
+    })),
+    path("<int:pk>/travels/<int:travel_id>/waypoints", AIAllergyAttackPredictionView.as_view({
+        "get": "retrieve_user_travel_waypoints",
+        "post": "create_travel_waypoints"
     })),
 ]

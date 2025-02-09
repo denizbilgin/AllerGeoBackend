@@ -44,7 +44,7 @@ class AIAllergyAttackPrediction(models.Model):
     travel = models.ForeignKey(Travel, on_delete=models.PROTECT, default=None, null=True)
 
     def __str__(self):
-        return str(self.ai_prediction) + " - " + str(self.had_allergy_attack) + ": model name is " + self.model.name
+        return str(self.ai_prediction) + " - " + str(self.had_allergy_attack) + ("" if self.model is None else " model: " + self.model.name)
 
     class Meta:
         db_table = "ai_allergy_attack_predictions"

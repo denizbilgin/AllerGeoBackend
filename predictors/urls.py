@@ -13,6 +13,11 @@ urlpatterns = [
     })),
     path("ai-allergy-attack-predictions", views.AIAllergyAttackPredictionView.as_view({
         "get": "list",
-        #"post": "create"
+        "post": "create"
+    })),
+    path("ai-allergy-attack-predictions/<int:pk>", views.AIAllergyAttackPredictionView.as_view({
+        "get": "retrieve",
+        "patch": "partial_update",
+        "delete": "destroy"
     })),
 ]

@@ -24,7 +24,7 @@ class AIAllergyAttackPredictionSerializer(serializers.ModelSerializer):
     ai_prediction = serializers.IntegerField(min_value=0, default=0)
 
     model = AIModelSerializer(read_only=True)
-    model_id = serializers.IntegerField(write_only=True)
+    model_id = serializers.IntegerField(write_only=True, required=False, allow_null=True)
 
     travel = TravelSerializer(read_only=True)
     travel_id = serializers.IntegerField(write_only=True)
@@ -37,11 +37,13 @@ class AIAllergyAttackPredictionSerializer(serializers.ModelSerializer):
         district_id = attrs.get("district_id")
         travel_id = attrs.get("travel_id")
         model_id = attrs.get("model_id")
+        selected_date = attrs.get("date")
         try:
             user = AllergicUser.objects.get(pk=user_id)
             district = District.objects.get(pk=district_id)
             travel = Travel.objects.get(pk=travel_id)
-            model = AIModel.objects.get(pk=model_id)
+            if model_id:
+                model = AIModel.objects.get(pk=model_id)
         except AllergicUser.DoesNotExist:
             raise serializers.ValidationError("Invalid User ID.")
         except District.DoesNotExist:
@@ -50,6 +52,12 @@ class AIAllergyAttackPredictionSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Invalid Travel ID.")
         except AIModel.DoesNotExist:
             raise serializers.ValidationError("Invalid AI Model ID.")
+
+        if selected_date:
+            if not (travel.start_date <= selected_date <= travel.return_date):
+                raise serializers.ValidationError(
+                    {"date": "The selected date must be between the travel start and return date."}
+                )
 
         return attrs
 
