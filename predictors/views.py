@@ -230,3 +230,66 @@ class AIAllergyAttackPredictionView(ViewSet):
 
         created_waypoints = sorted(created_waypoints, key=lambda x: x.date)
         return Response(AIAllergyAttackPredictionSerializer(created_waypoints, many=True).data, status=status.HTTP_201_CREATED)
+
+    @swagger_auto_schema(
+        responses={200: AIAllergyAttackPredictionSerializer, 404: "User, Travel ol Waypoint not found."})
+    def retrieve_waypoint(self, request, pk=None, travel_id=None, waypoint_id=None):
+        try:
+            user = AllergicUser.objects.get(pk=pk)
+            travel = Travel.objects.get(id=travel_id, user=user)
+            waypoint = AIAllergyAttackPrediction.objects.get(id=waypoint_id, travel=travel)
+        except AllergicUser.DoesNotExist:
+            return Response({"Error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+        except Travel.DoesNotExist:
+            return Response({"Error": "Travel not found."}, status=status.HTTP_404_NOT_FOUND)
+        except AIAllergyAttackPrediction.DoesNotExist:
+            return Response({"Error": "Waypoint not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        serialized_waypoint = AIAllergyAttackPredictionSerializer(waypoint)
+        return Response(serialized_waypoint.data, status=status.HTTP_200_OK)
+
+    @swagger_auto_schema(
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                "date": openapi.Schema(type=openapi.TYPE_STRING, format=openapi.FORMAT_DATETIME,
+                                       description="Date and time in ISO 8601 format (e.g., 2025-01-05T14:30:00Z)"),
+                "district_id": openapi.Schema(type=openapi.TYPE_INTEGER),
+                "ai_prediction": openapi.Schema(type=openapi.TYPE_INTEGER),
+                "had_allergy_attack": openapi.Schema(type=openapi.TYPE_BOOLEAN),
+                "model_id": openapi.Schema(type=openapi.TYPE_INTEGER),
+            }),
+        responses={200: AIAllergyAttackPredictionSerializer, 400: "Invalid Data", 404: "User, Travel or Waypoint not found."})
+    def partial_update_waypoint(self, request, pk=None, travel_id=None, waypoint_id=None):
+        try:
+            user = AllergicUser.objects.get(pk=pk)
+            travel = Travel.objects.get(id=travel_id, user=user)
+            waypoint = AIAllergyAttackPrediction.objects.get(id=waypoint_id, travel=travel)
+        except AllergicUser.DoesNotExist:
+            return Response({"Error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+        except Travel.DoesNotExist:
+            return Response({"Error": "Travel not found."}, status=status.HTTP_404_NOT_FOUND)
+        except AIAllergyAttackPrediction.DoesNotExist:
+            return Response({"Error": "Waypoint not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = AIAllergyAttackPredictionSerializer(waypoint, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    @swagger_auto_schema(responses={204: "No Content", 404: "User, Travel or Waypoint not found"})
+    def destroy_waypoint(self, request, pk=None, travel_id=None, waypoint_id=None):
+        try:
+            user = AllergicUser.objects.get(pk=pk)
+            travel = Travel.objects.get(id=travel_id, user=user)
+            waypoint = AIAllergyAttackPrediction.objects.get(id=waypoint_id, travel=travel)
+        except AllergicUser.DoesNotExist:
+            return Response({"Error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+        except Travel.DoesNotExist:
+            return Response({"Error": "Travel not found."}, status=status.HTTP_404_NOT_FOUND)
+        except AIAllergyAttackPrediction.DoesNotExist:
+            return Response({"Error": "Waypoint not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        waypoint.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)

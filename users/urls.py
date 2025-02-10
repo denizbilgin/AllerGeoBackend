@@ -33,4 +33,9 @@ urlpatterns = [
         "get": "retrieve_user_travel_waypoints",
         "post": "create_travel_waypoints"
     })),
+    path("<int:pk>/travels/<int:travel_id>/waypoints/<int:waypoint_id>", AIAllergyAttackPredictionView.as_view({
+        "get": "retrieve_waypoint",
+        "patch": "partial_update_waypoint",
+        "delete": "destroy_waypoint"
+    })),
 ]
