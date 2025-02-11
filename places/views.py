@@ -66,6 +66,15 @@ class CityView(ViewSet):
         except City.DoesNotExist:
             return Response({"Error": "City not found."}, status=status.HTTP_404_NOT_FOUND)
 
+    @swagger_auto_schema(responses={200: "JSON Data", 404: "City not found."})
+    def fetch_vegetation_data(self, request, pk=None):
+        try:
+            city = City.objects.get(pk=pk)
+            vegetation_data = city.fetch_vegetation_data()
+            return Response(vegetation_data, status=status.HTTP_200_OK)
+        except City.DoesNotExist:
+            return Response({"Error": "City not found."}, status=status.HTTP_404_NOT_FOUND)
+
 
 class DistrictView(ViewSet):
     @swagger_auto_schema(responses={200: DistrictSerializer(many=True)})
@@ -152,5 +161,14 @@ class DistrictView(ViewSet):
             district = District.objects.get(name=name)
             serialized_district = DistrictSerializer(district)
             return Response(serialized_district.data, status=status.HTTP_200_OK)
+        except District.DoesNotExist:
+            return Response({"Error": "District not found."}, status=status.HTTP_404_NOT_FOUND)
+
+    @swagger_auto_schema(responses={200: "JSON Data", 404: "City not found."})
+    def fetch_vegetation_data(self, request, pk=None):
+        try:
+            district = District.objects.get(pk=pk)
+            vegetation_data = district.fetch_vegetation_data()
+            return Response(vegetation_data, status=status.HTTP_200_OK)
         except District.DoesNotExist:
             return Response({"Error": "District not found."}, status=status.HTTP_404_NOT_FOUND)

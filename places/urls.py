@@ -14,6 +14,9 @@ urlpatterns = [
     path("cities/<str:name>", views.CityView.as_view({
         "get": "retrieve_by_name"
     })),
+    path("cities/<int:pk>/vegetation", views.CityView.as_view({
+        "get": "fetch_vegetation_data"
+    })),
     path("districts", views.DistrictView.as_view({
         "get": "list",
         "post": "create"
@@ -25,5 +28,8 @@ urlpatterns = [
     })),
     path("districts/<str:name>", views.DistrictView.as_view({
         "get": "retrieve_by_name"
-    }))
+    })),
+    path("districts/<int:pk>/vegetation", views.DistrictView.as_view({
+        "get": "fetch_vegetation_data"
+    })),
 ]

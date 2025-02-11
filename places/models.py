@@ -1,4 +1,6 @@
 from django.db import models
+from places.services.vegetation_collector import IVegetationCollector
+from places.services.plantnet import PlantNet
 
 
 class Place(models.Model):
@@ -9,12 +11,16 @@ class Place(models.Model):
     northeast_longitude = models.FloatField()
     southwest_latitude = models.FloatField()
     southwest_longitude = models.FloatField()
+    vegetation_collector: IVegetationCollector = PlantNet()  # Dependency Injection
+
+    def fetch_vegetation_data(self):
+        return self.vegetation_collector.get_data(self)
 
     def __str__(self):
         return self.name
 
     class Meta:
-        abstract = True  # Prevents creating a table in this class
+        abstract = True
 
 
 class City(Place):
