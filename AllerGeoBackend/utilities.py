@@ -84,19 +84,3 @@ def define_user_photo_path(instance, filename: str) -> AnyStr:
     extension = os.path.splitext(filename)[1]
     photo_path = f"{instance.id}_{name_slug}{extension}"
     return f"profile_photos/{photo_path}"
-
-
-async def translate_to_turkish(common_names: Dict[AnyStr, AnyStr], languages_priority: List[AnyStr] = ["fra", "eng", "deu"]) -> AnyStr:
-    translator = Translator()
-    for lang in languages_priority:
-        if lang in common_names.keys():
-            text_to_translate = common_names[lang]
-            translation = await translator.translate(text=text_to_translate, src=lang[:-1], dest="tr")
-            return translation.text
-
-    if common_names:
-        text_to_translate = next(iter(common_names.values()))
-        translation = await translator.translate(text_to_translate, src='auto', dest='tr')
-        return translation.text
-
-    return "No translation available."

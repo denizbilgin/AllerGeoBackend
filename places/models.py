@@ -38,3 +38,43 @@ class District(Place):
     class Meta:
         db_table = "districts"
         db_table_comment = "Table containing coordinate information of districts of Türkiye"
+
+
+class Vegetation(models.Model):
+    species_name = models.CharField(max_length=255)
+    common_name = models.CharField(max_length=255)
+    family_name = models.CharField(max_length=255)
+    family_link = models.TextField(blank=True, null=True)
+    images = models.TextField(blank=True, null=True)
+    gbif_number = models.IntegerField()
+    gbif_link = models.TextField(blank=True, null=True)
+    last_update_date = models.DateTimeField(auto_now=True)
+    creation_date = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.common_name + " - " + self.family_name
+
+    class Meta:
+        abstract = True
+
+
+class CityVegetation(Vegetation):
+    city = models.ForeignKey(City, on_delete=models.PROTECT, default=None, db_column="city_id")
+
+    def __str__(self):
+        return self.common_name + " - " + self.family_name + ": " + self.city.name
+
+    class Meta:
+        db_table = "city_vegetations"
+        db_table_comment = "Table containing vegetation information of cities of Türkiye"
+
+
+class DistrictVegetation(Vegetation):
+    district = models.ForeignKey(District, on_delete=models.PROTECT, default=None, db_column="district_id")
+
+    def __str__(self):
+        return self.common_name + " - " + self.family_name + ": " + self.district.name
+
+    class Meta:
+        db_table = "district_vegetations"
+        db_table_comment = "Table containing vegetation information of districts of Türkiye"

@@ -1,5 +1,6 @@
 from places.services.vegetation_collector import IVegetationCollector
-from typing import List, Dict, AnyStr, Union, TYPE_CHECKING
+from typing import List, Dict, TYPE_CHECKING, cast
+from datetime import timedelta
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.service import Service
@@ -7,13 +8,17 @@ from selenium.webdriver.common.keys import Keys
 import time
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from django.utils.timezone import now
+
 if TYPE_CHECKING:
-    from places.models import Place
+    from places.models import Place, Vegetation
 
 
 class PlantNet(IVegetationCollector):
-    def __init__(self):
+    def __init__(self, vegetation_durability_days: int = 60, selenium_timeout_time: int = 15):
         super().__init__()
+        self.vegetation_durability_days = vegetation_durability_days
+        self.selenium_timeout_time = selenium_timeout_time
 
         # Driver settings
         self.plantnet_link = 'https://identify.plantnet.org/tr/prediction'
@@ -21,21 +26,35 @@ class PlantNet(IVegetationCollector):
         options.add_argument('--headless')
         self.driver = webdriver.Chrome(service=Service("chromedriver/chromedriver.exe"), options=options)
 
-    def get_data(self, place: "Place"):
+    def get_data(self, place: "Place") -> List["Vegetation"]:
+        from ..models import District, City, DistrictVegetation, CityVegetation
+        is_city = isinstance(place, City)
+        model = CityVegetation if is_city else DistrictVegetation
+        filter_kwargs = {"city" if is_city else "district": place}
+
+        # Looking for old data
+        vegetation: Vegetation = model.objects.filter(**filter_kwargs).first()
+        if vegetation:
+            if vegetation.last_update_date + timedelta(days=self.vegetation_durability_days) >= now():
+                return model.objects.filter(**filter_kwargs).values()
+
+            # Deleting old values
+            model.objects.filter(**filter_kwargs).delete()
+
         species = []
 
         self.driver.get(self.plantnet_link)
+
         # Search bar
-        wait = WebDriverWait(self.driver, 10)
+        wait = WebDriverWait(self.driver, self.selenium_timeout_time)
         search_box = wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, 'input.glass')))
 
-        from ..models import District, City
-        if isinstance(place, District):
-            search_query = f"{place.name},{place.city.name},Türkiye"
-        elif isinstance(place, City):
+        # Defining search query
+        if is_city:
             search_query = f"{place.name},Türkiye"
         else:
-            return {"TypeError": "Place can only be of type District or City."}
+            place = cast(District, place)
+            search_query = f"{place.name},{place.city.name},Türkiye"
 
         search_box.send_keys(search_query)
         search_box.send_keys(Keys.ENTER)
@@ -81,7 +100,28 @@ class PlantNet(IVegetationCollector):
                 }
             }
             species.append(species_data)
-        return species
 
-    def save(self, data: Union[List[Dict], Dict], filename: AnyStr):
-        pass
+        self.save(species, is_city, place)
+        return model.objects.filter(**filter_kwargs).values()
+
+    def save(self, data: List[Dict], is_city: bool, place: "Place"):
+        from ..models import DistrictVegetation, CityVegetation
+        model = CityVegetation if is_city else DistrictVegetation
+        instances = []
+        place_field = "city" if is_city else "district"
+
+        for item in data:
+            instances.append(model(
+                species_name=item["species_name"],
+                common_name=item["common_name"],
+                family_name=item["family"]["name"],
+                family_link=item["family"]["link"],
+                images=";".join(item["images"]),
+                gbif_number=item["GBIF"]["number"],
+                gbif_link=item["GBIF"]["link"],
+                last_update_date=now(),
+                **{place_field: place}
+            ))
+        model.objects.bulk_create(instances, ignore_conflicts=True)
+
+# TODO: Alerjenler ile Vegetation şuan aynı şeyi yapıyor neredeyse
