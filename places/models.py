@@ -1,4 +1,6 @@
 from django.db import models
+
+from allergies.models import Allergen
 from places.services.vegetation_collector import IVegetationCollector
 from places.services.plantnet import PlantNet
 
@@ -41,18 +43,13 @@ class District(Place):
 
 
 class Vegetation(models.Model):
-    species_name = models.CharField(max_length=255)
-    common_name = models.CharField(max_length=255)
-    family_name = models.CharField(max_length=255)
-    family_link = models.TextField(blank=True, null=True)
-    images = models.TextField(blank=True, null=True)
     gbif_number = models.IntegerField()
-    gbif_link = models.TextField(blank=True, null=True)
     last_update_date = models.DateTimeField(auto_now=True)
     creation_date = models.DateTimeField(auto_now_add=True)
+    allergen = models.ForeignKey(Allergen, on_delete=models.PROTECT, default=None, db_column="allergen_id")
 
     def __str__(self):
-        return self.common_name + " - " + self.family_name
+        return self.allergen.name + " - " + self.allergen.family
 
     class Meta:
         abstract = True
@@ -62,7 +59,7 @@ class CityVegetation(Vegetation):
     city = models.ForeignKey(City, on_delete=models.PROTECT, default=None, db_column="city_id")
 
     def __str__(self):
-        return self.common_name + " - " + self.family_name + ": " + self.city.name
+        return self.allergen.name + " - " + self.allergen.family + ": " + self.city.name
 
     class Meta:
         db_table = "city_vegetations"
@@ -73,7 +70,7 @@ class DistrictVegetation(Vegetation):
     district = models.ForeignKey(District, on_delete=models.PROTECT, default=None, db_column="district_id")
 
     def __str__(self):
-        return self.common_name + " - " + self.family_name + ": " + self.district.name
+        return self.allergen.name + " - " + self.allergen.family + ": " + self.district.name
 
     class Meta:
         db_table = "district_vegetations"

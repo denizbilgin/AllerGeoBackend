@@ -55,7 +55,7 @@ class CityView(ViewSet):
         except City.DoesNotExist:
             return Response({"Error": "City not found."}, status=status.HTTP_404_NOT_FOUND)
 
-    @swagger_auto_schema(responses={200: CitySerializer, 404: "City not found."})
+    @swagger_auto_schema(responses={200: CitySerializer, 404: "City or Vegetation Data not found."})
     def retrieve_by_name(self, request, name=None):
         name = turkish_uppercase(name)
         try:
@@ -71,7 +71,12 @@ class CityView(ViewSet):
         try:
             city = City.objects.get(pk=pk)
             vegetation_data = city.fetch_vegetation_data()
-            return Response(vegetation_data, status=status.HTTP_200_OK)
+
+            if not vegetation_data:
+                return Response({"Error": "Vegetation Data not found."}, status=status.HTTP_404_NOT_FOUND)
+
+            serialized_vegetation_data = CityVegetationSerializer(vegetation_data, many=True)
+            return Response(serialized_vegetation_data.data, status=status.HTTP_200_OK)
         except City.DoesNotExist:
             return Response({"Error": "City not found."}, status=status.HTTP_404_NOT_FOUND)
 
@@ -153,7 +158,7 @@ class DistrictView(ViewSet):
         except District.DoesNotExist:
             return Response({"Error": "District not found."}, status=status.HTTP_404_NOT_FOUND)
 
-    @swagger_auto_schema(responses={200: DistrictSerializer, 404: "District not found."})
+    @swagger_auto_schema(responses={200: DistrictSerializer, 404: "District or Vegetation Data not found."})
     def retrieve_by_name(self, request, name=None):
         name = turkish_uppercase(name)
         try:
@@ -169,6 +174,11 @@ class DistrictView(ViewSet):
         try:
             district = District.objects.get(pk=pk)
             vegetation_data = district.fetch_vegetation_data()
-            return Response(vegetation_data, status=status.HTTP_200_OK)
+            print(vegetation_data)
+            if not vegetation_data:
+                return Response({"Error": "Vegetation Data not found."}, status=status.HTTP_404_NOT_FOUND)
+
+            serialized_vegetation_data = DistrictVegetationSerializer(vegetation_data, many=True)
+            return Response(serialized_vegetation_data.data, status=status.HTTP_200_OK)
         except District.DoesNotExist:
             return Response({"Error": "District not found."}, status=status.HTTP_404_NOT_FOUND)

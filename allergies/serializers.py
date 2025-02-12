@@ -1,7 +1,4 @@
 from rest_framework import serializers
-
-from places.serializers import DistrictSerializer
-from users.serializers import UserSerializer
 from .models import *
 
 

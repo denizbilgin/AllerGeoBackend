@@ -1,8 +1,5 @@
 from django.db import models
 
-from places.models import District
-from users.models import AllergicUser
-
 
 class AllergenType(models.Model):
     name = models.CharField(max_length=255)
@@ -17,8 +14,12 @@ class AllergenType(models.Model):
 
 class Allergen(models.Model):
     name = models.CharField(max_length=255)
-    description = models.TextField(blank=True, null=True)
-    allergen_type = models.ForeignKey(AllergenType, on_delete=models.PROTECT, default=None, db_column="allergen_type_id")
+    species_name = models.CharField(max_length=255, blank=True, null=True)
+    family = models.CharField(max_length=255, blank=True, null=True)
+    family_link = models.CharField(max_length=255, blank=True, null=True)
+    images = models.TextField(blank=True, null=True)
+    link = models.TextField(blank=True, null=True)
+    allergen_type = models.ForeignKey(AllergenType, on_delete=models.PROTECT, default=2, db_column="allergen_type_id")
 
     def __str__(self):
         return self.name + " - " + self.allergen_type.name
@@ -53,7 +54,7 @@ class AllergenRegion(models.Model):
 
 
 class UserAllergy(models.Model):
-    user = models.ForeignKey(AllergicUser, on_delete=models.PROTECT, default=None, db_column="user_id")
+    user = models.ForeignKey("users.AllergicUser", on_delete=models.PROTECT, default=None, db_column="user_id")
     allergen = models.ForeignKey(Allergen, on_delete=models.PROTECT, default=None, db_column="allergen_id")
     creation_date = models.DateTimeField(auto_now_add=True)
     importance_level = models.IntegerField(default=1)

@@ -1,4 +1,6 @@
 from rest_framework import serializers
+
+from allergies.serializers import AllergenSerializer
 from places.models import *
 
 
@@ -47,3 +49,25 @@ class DistrictSerializer(PlaceSerializer):
     class Meta(PlaceSerializer.Meta):
         model = District
         fields = "__all__"
+
+
+class VegetationSerializer(serializers.ModelSerializer):
+    allergen = AllergenSerializer(read_only=True)
+    gbif_number = serializers.IntegerField(min_value=1)
+
+    class Meta:
+        fields = "__all__"
+
+
+class CityVegetationSerializer(VegetationSerializer):
+    city = CitySerializer(read_only=True)
+
+    class Meta(VegetationSerializer.Meta):
+        model = CityVegetation
+
+
+class DistrictVegetationSerializer(VegetationSerializer):
+    district = DistrictSerializer(read_only=True)
+
+    class Meta(VegetationSerializer.Meta):
+        model = DistrictVegetation
