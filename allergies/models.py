@@ -66,20 +66,4 @@ class UserAllergy(models.Model):
         db_table_comment = "Table that contains allergy data of users for AllerGeo"
 
 
-class AllergyAttack(models.Model):
-    user = models.ForeignKey(AllergicUser, on_delete=models.PROTECT, default=None, db_column="user_id")
-    district = models.ForeignKey(District, on_delete=models.PROTECT, default=None, db_column="district_id")
-    date = models.DateTimeField()
-    allergen = models.ForeignKey(Allergen, on_delete=models.PROTECT, default=None, db_column="allergen_id")
-    notes = models.TextField(blank=True, null=True)
-
-    def __str__(self):
-        return (self.user.first_name + " " + self.user.last_name + " - " + self.allergen.name +
-                " : " + str(self.date.day) + "/" + str(self.date.month) + "/" + str(self.date.year))
-
-    class Meta:
-        db_table = "allergy_attacks"
-        db_table_comment = "Table that contains allergy attack information of users for AllerGeo"
-
-
 # TODO: userin aynı alerjeni bir kere içermesi gibi ve buna benzer durumları kontrol et

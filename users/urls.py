@@ -1,5 +1,5 @@
 from django.urls import path
-from allergies.views import UserAllergyView, AllergyAttackView
+from allergies.views import UserAllergyView
 from .views import TravelView
 from . import views
 from predictors.views import AIAllergyAttackPredictionView
@@ -11,14 +11,6 @@ urlpatterns = [
     path("<int:pk>/allergies", UserAllergyView.as_view({
         "get": "retrieve_user_allergies",
         "post": "create",
-        "delete": "destroy"
-    })),
-    path("<int:pk>/allergy-attacks", AllergyAttackView.as_view({
-        "get": "retrieve_user_allergy_attacks",
-        "post": "create"
-    })),
-    path("<int:pk>/allergy-attacks/<int:allergy_attack_id>", AllergyAttackView.as_view({
-        "patch": "partial_update",
         "delete": "destroy"
     })),
     path("<int:pk>/travels", TravelView.as_view({
@@ -39,3 +31,14 @@ urlpatterns = [
         "delete": "destroy_waypoint"
     })),
 ]
+
+"""
+    path("<int:pk>/allergy-attacks", AllergyAttackView.as_view({
+        "get": "retrieve_user_allergy_attacks",
+        "post": "create"
+    })),
+    path("<int:pk>/allergy-attacks/<int:allergy_attack_id>", AllergyAttackView.as_view({
+        "patch": "partial_update",
+        "delete": "destroy"
+    })),
+"""
