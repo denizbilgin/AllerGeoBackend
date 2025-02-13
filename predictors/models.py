@@ -41,7 +41,7 @@ class AIAllergyAttackPrediction(models.Model):
     ai_prediction = models.FloatField(blank=True, null=True, default=0)
     had_allergy_attack = models.BooleanField(blank=True, null=True)
     model = models.ForeignKey(AIModel, on_delete=models.PROTECT, db_column="model_id", blank=True, null=True)
-    travel = models.ForeignKey(Travel, on_delete=models.PROTECT, default=None, null=True)
+    travel = models.ForeignKey(Travel, on_delete=models.PROTECT, default=None, null=True, blank=True)
 
     def __str__(self):
         return str(self.ai_prediction) + " - " + str(self.had_allergy_attack) + ("" if self.model is None else " model: " + self.model.name)

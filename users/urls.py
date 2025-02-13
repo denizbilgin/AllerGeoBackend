@@ -30,15 +30,12 @@ urlpatterns = [
         "patch": "partial_update_waypoint",
         "delete": "destroy_waypoint"
     })),
-]
-
-"""
-    path("<int:pk>/allergy-attacks", AllergyAttackView.as_view({
+    path("<int:pk>/allergy-attacks", AIAllergyAttackPredictionView.as_view({
         "get": "retrieve_user_allergy_attacks",
-        "post": "create"
+        "post": "create_user_allergy_attack"
     })),
-    path("<int:pk>/allergy-attacks/<int:allergy_attack_id>", AllergyAttackView.as_view({
-        "patch": "partial_update",
-        "delete": "destroy"
+    path("<int:pk>/allergy-attacks/<int:allergy_attack_id>", AIAllergyAttackPredictionView.as_view({
+        "patch": "partial_update_user_allergy_attack",
+        "delete": "destroy_user_allergy_attack"
     })),
-"""
+]

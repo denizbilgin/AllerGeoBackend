@@ -293,3 +293,75 @@ class AIAllergyAttackPredictionView(ViewSet):
 
         waypoint.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @swagger_auto_schema(responses={200: AIAllergyAttackPredictionSerializer(many=True), 404: "User or Allergy Attack not found."})
+    def retrieve_user_allergy_attacks(self, request, pk=None):
+        try:
+            user = AllergicUser.objects.get(pk=pk)
+
+            allergy_attacks = AIAllergyAttackPrediction.objects.filter(user=user, had_allergy_attack=True)
+        except AllergicUser.DoesNotExist:
+            return Response({"Error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+        except AIAllergyAttackPrediction.DoesNotExist:
+            return Response({"Error": "Allergy Attack not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        serialized_allergy_attacks = AIAllergyAttackPredictionSerializer(allergy_attacks, many=True)
+        return Response(serialized_allergy_attacks.data, status=status.HTTP_200_OK)
+
+    @swagger_auto_schema(
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                "date": openapi.Schema(type=openapi.TYPE_STRING, format=openapi.FORMAT_DATETIME,
+                                       description="Date and time in ISO 8601 format (e.g., 2025-01-05T14:30:00Z)"),
+                "district_id": openapi.Schema(type=openapi.TYPE_INTEGER),
+                "travel_id": openapi.Schema(type=openapi.TYPE_INTEGER)
+            },
+            required=["date", "district_id"]),
+        responses={201: AIAllergyAttackPredictionSerializer, 400: "Invalid Data"})
+    def create_user_allergy_attack(self, request, pk=None):
+        request.data["user_id"] = pk
+        request.data["had_allergy_attack"] = True
+        serializer = AIAllergyAttackPredictionSerializer(data=request.data)
+        if serializer.is_valid():
+            ai_allergy_attack_prediction = serializer.save()
+            return Response(AIAllergyAttackPredictionSerializer(ai_allergy_attack_prediction).data,
+                            status=status.HTTP_201_CREATED)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    @swagger_auto_schema(
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                "date": openapi.Schema(type=openapi.TYPE_STRING, format=openapi.FORMAT_DATETIME,
+                                       description="Date and time in ISO 8601 format (e.g., 2025-01-05T14:30:00Z)"),
+                "district_id": openapi.Schema(type=openapi.TYPE_INTEGER)
+            }),
+        responses={200: AIAllergyAttackPredictionSerializer, 400: "Invalid Data", 404: "User or Allergy Attack not found."})
+    def partial_update_user_allergy_attack(self, request, pk=None, allergy_attack_id=None):
+        try:
+            user = AllergicUser.objects.get(pk=pk)
+            allergy_attack = AIAllergyAttackPrediction.objects.get(id=allergy_attack_id, user=user)
+        except AllergicUser.DoesNotExist:
+            return Response({"Error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+        except AIAllergyAttackPrediction.DoesNotExist:
+            return Response({"Error": "Allergy Attack not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = AIAllergyAttackPredictionSerializer(allergy_attack, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    @swagger_auto_schema(responses={204: "No Content", 404: "User or Allergy Attack not found"})
+    def destroy_user_allergy_attack(self, request, pk=None, allergy_attack_id=None):
+        try:
+            user = AllergicUser.objects.get(pk=pk)
+            allergy_attack = AIAllergyAttackPrediction.objects.get(id=allergy_attack_id, user=user)
+            allergy_attack.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except AllergicUser.DoesNotExist:
+            return Response({"Error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+        except AIAllergyAttackPrediction.DoesNotExist:
+            return Response({"Error": "Allergy Attack not found."}, status=status.HTTP_404_NOT_FOUND)
