@@ -65,6 +65,3 @@ class UserAllergy(models.Model):
     class Meta:
         db_table = "user_allergies"
         db_table_comment = "Table that contains allergy data of users for AllerGeo"
-
-
-# TODO: userin aynı alerjeni bir kere içermesi gibi ve buna benzer durumları kontrol et

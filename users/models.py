@@ -3,6 +3,7 @@ from django.contrib.auth.models import AbstractUser
 from datetime import date
 from places.models import District
 from AllerGeoBackend.utilities import define_user_photo_path
+import os
 
 
 class MembershipType(models.Model):

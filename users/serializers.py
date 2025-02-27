@@ -4,7 +4,9 @@ from users.models import AllergicUser, Travel
 
 
 class UserSerializer(serializers.ModelSerializer):
-    residence_district = DistrictSerializer()
+    residence_district = DistrictSerializer(read_only=True)
+    residence_district_id = serializers.IntegerField(write_only=True)
+
     username = serializers.CharField(max_length=150, min_length=3)
     first_name = serializers.CharField(max_length=150, min_length=2)
     last_name = serializers.CharField(max_length=150, min_length=2)
