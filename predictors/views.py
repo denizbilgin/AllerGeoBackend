@@ -232,7 +232,7 @@ class AIAllergyAttackPredictionView(ViewSet):
         return Response(AIAllergyAttackPredictionSerializer(created_waypoints, many=True).data, status=status.HTTP_201_CREATED)
 
     @swagger_auto_schema(
-        responses={200: AIAllergyAttackPredictionSerializer, 404: "User, Travel ol Waypoint not found."})
+        responses={200: AIAllergyAttackPredictionSerializer, 404: "User, Travel or Waypoint not found."})
     def retrieve_waypoint(self, request, pk=None, travel_id=None, waypoint_id=None):
         try:
             user = AllergicUser.objects.get(pk=pk)
@@ -365,3 +365,17 @@ class AIAllergyAttackPredictionView(ViewSet):
             return Response({"Error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
         except AIAllergyAttackPrediction.DoesNotExist:
             return Response({"Error": "Allergy Attack not found."}, status=status.HTTP_404_NOT_FOUND)
+
+    @swagger_auto_schema(
+        responses={200: AIAllergyAttackPredictionSerializer, 404: "User or Allergy Attack not found."})
+    def retrieve_allergy_attack(self, request, pk=None, allergy_attack_id=None):
+        try:
+            user = AllergicUser.objects.get(pk=pk)
+            allergy_attack = AIAllergyAttackPrediction.objects.get(id=allergy_attack_id, user=user)
+        except AllergicUser.DoesNotExist:
+            return Response({"Error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+        except AIAllergyAttackPrediction.DoesNotExist:
+            return Response({"Error": "Allergy Attack not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        serialized_waypoint = AIAllergyAttackPredictionSerializer(allergy_attack)
+        return Response(serialized_waypoint.data, status=status.HTTP_200_OK)

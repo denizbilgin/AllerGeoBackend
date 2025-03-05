@@ -14,6 +14,16 @@ class UserView(ViewSet):
         serialized_allergic_user = UserSerializer(allergic_user, many=True)
         return Response(serialized_allergic_user.data, status=status.HTTP_200_OK)
 
+    @swagger_auto_schema(responses={200: UserSerializer(), 404: "User not found."})
+    def retrieve(self, request, pk=None):
+        try:
+            user = AllergicUser.objects.get(pk=pk)
+        except AllergicUser.DoesNotExist:
+            return Response({"Error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        serialized_user = UserSerializer(user)
+        return Response(serialized_user.data, status=status.HTTP_200_OK)
+
 
 class TravelView(ViewSet):
     @swagger_auto_schema(responses={200: TravelSerializer(many=True), 404: "User not found."})

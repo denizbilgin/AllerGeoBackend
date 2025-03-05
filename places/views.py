@@ -158,7 +158,7 @@ class DistrictView(ViewSet):
         except District.DoesNotExist:
             return Response({"Error": "District not found."}, status=status.HTTP_404_NOT_FOUND)
 
-    @swagger_auto_schema(responses={200: DistrictSerializer, 404: "District or Vegetation Data not found."})
+    @swagger_auto_schema(responses={200: DistrictSerializer, 404: "District not found."})
     def retrieve_by_name(self, request, name=None):
         name = turkish_uppercase(name)
         try:
@@ -169,7 +169,7 @@ class DistrictView(ViewSet):
         except District.DoesNotExist:
             return Response({"Error": "District not found."}, status=status.HTTP_404_NOT_FOUND)
 
-    @swagger_auto_schema(responses={200: "JSON Data", 404: "City not found."})
+    @swagger_auto_schema(responses={200: "JSON Data", 404: "District or Vegetation Data not found."})
     def fetch_vegetation_data(self, request, pk=None):
         try:
             district = District.objects.get(pk=pk)

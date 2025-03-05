@@ -6,6 +6,7 @@ from rest_framework.response import Response
 import rest_framework.status as status
 from drf_yasg import openapi
 from AllerGeoBackend.utilities import turkish_capitalize
+from users.models import AllergicUser
 
 
 class AllergenTypeView(ModelViewSet):
@@ -110,7 +111,8 @@ class AllergenRegionView(ViewSet):
     def retrieve_by_allergen(self, request, pk=None):
         try:
             allergen = Allergen.objects.get(pk=pk)
-            filtered_allergen_regions = AllergenRegion.objects.filter(allergen_id=allergen.id).select_related("common_region")
+            filtered_allergen_regions = AllergenRegion.objects.filter(allergen_id=allergen.id).select_related(
+                "common_region")
             common_regions = [allergen_region.common_region for allergen_region in filtered_allergen_regions]
         except Allergen.DoesNotExist:
             return Response({"Error": "Allergen not found."}, status=status.HTTP_404_NOT_FOUND)
@@ -122,7 +124,8 @@ class AllergenRegionView(ViewSet):
     def retrieve_by_region(self, request, pk=None):
         try:
             common_region = CommonRegion.objects.get(pk=pk)
-            filtered_allergen_regions = AllergenRegion.objects.filter(common_region_id=common_region.id).select_related("allergen")
+            filtered_allergen_regions = AllergenRegion.objects.filter(common_region_id=common_region.id).select_related(
+                "allergen")
             allergens = [allergen_region.allergen for allergen_region in filtered_allergen_regions]
         except CommonRegion.DoesNotExist:
             return Response({"Error": "Common Region not found."}, status=status.HTTP_404_NOT_FOUND)
@@ -174,7 +177,8 @@ class AllergenRegionView(ViewSet):
         except Allergen.DoesNotExist:
             return Response({"Error": "Allergen not found."}, status=status.HTTP_404_NOT_FOUND)
         except AllergenRegion.DoesNotExist:
-            return Response({"Error": "Given Allergen does not contain given Allergen Region."}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"Error": "Given Allergen does not contain given Allergen Region."},
+                            status=status.HTTP_404_NOT_FOUND)
 
 
 class UserAllergyView(ViewSet):
@@ -207,25 +211,49 @@ class UserAllergyView(ViewSet):
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+    @swagger_auto_schema(responses={204: "No Content", 404: "User or User Allergy not found"})
+    def destroy(self, request, pk=None, user_allergy_id=None):
+        try:
+            user = AllergicUser.objects.get(pk=pk)
+            user_allergy = UserAllergy.objects.get(user=user, id=user_allergy_id)
+            user_allergy.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except AllergicUser.DoesNotExist:
+            return Response({"Error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+        except UserAllergy.DoesNotExist:
+            return Response({"Error": "User Allergy not found."}, status=status.HTTP_404_NOT_FOUND)
+
+    @swagger_auto_schema(responses={200: UserAllergySerializer, 404: "User or User Allergy not found."})
+    def retrieve_user_allergy(self, request, pk=None, user_allergy_id=None):
+        try:
+            user = AllergicUser.objects.get(pk=pk)
+            user_allergy = UserAllergy.objects.get(user=user, id=user_allergy_id)
+            serialized_user_allergy = UserAllergySerializer(user_allergy)
+            return Response(serialized_user_allergy.data, status=status.HTTP_200_OK)
+        except AllergicUser.DoesNotExist:
+            return Response({"Error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+        except UserAllergy.DoesNotExist:
+            return Response({"Error": "User Allergy not found."}, status=status.HTTP_404_NOT_FOUND)
+
     @swagger_auto_schema(
         request_body=openapi.Schema(
             type=openapi.TYPE_OBJECT,
             properties={
                 'allergen_id': openapi.Schema(type=openapi.TYPE_INTEGER),
-            },
-            required=['allergen_id']),
-        responses={204: "No Content", 404: "Allergen, User Allergy or User not found."})
-    def destroy(self, request, pk=None):
-        allergen_id = request.data.get('allergen_id')
+                'importance_level': openapi.Schema(type=openapi.TYPE_INTEGER)
+            }),
+        responses={200: UserAllergySerializer, 400: "Invalid Data", 404: "User or User Allergy not found"})
+    def partial_update(self, request, pk=None, user_allergy_id=None):
         try:
             user = AllergicUser.objects.get(pk=pk)
-            allergen = Allergen.objects.get(pk=allergen_id)
-            user_allergy = UserAllergy.objects.get(user=user, allergen=allergen)
-            user_allergy.delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)
+            user_allergy = UserAllergy.objects.get(user=user, id=user_allergy_id)
         except AllergicUser.DoesNotExist:
             return Response({"Error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
-        except Allergen.DoesNotExist:
-            return Response({"Error": "Allergen not found."}, status=status.HTTP_404_NOT_FOUND)
         except UserAllergy.DoesNotExist:
             return Response({"Error": "User Allergy not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = UserAllergySerializer(user_allergy, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

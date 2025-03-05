@@ -2,6 +2,7 @@ from typing import AnyStr, Optional, Dict, List, TYPE_CHECKING
 from difflib import SequenceMatcher
 from django.utils.text import slugify
 import os
+from places.models import District
 from googletrans import Translator
 if TYPE_CHECKING:
     from places.models import District
