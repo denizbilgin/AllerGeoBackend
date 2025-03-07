@@ -35,6 +35,9 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class TravelSerializer(serializers.ModelSerializer):
+    user = UserSerializer(read_only=True)
+    user_id = serializers.IntegerField(write_only=True)
+
     class Meta:
         model = Travel
         fields = "__all__"

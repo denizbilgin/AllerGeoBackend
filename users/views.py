@@ -93,3 +93,17 @@ class TravelView(ViewSet):
             return Response({"Error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
         except Travel.DoesNotExist:
             return Response({"Error": "Travel not found."}, status=status.HTTP_404_NOT_FOUND)
+
+    @swagger_auto_schema(
+        responses={200: TravelSerializer, 404: "User or Travel not found."})
+    def retrieve_travel(self, request, pk=None, travel_id=None):
+        try:
+            user = AllergicUser.objects.get(pk=pk)
+            travel = Travel.objects.get(user=user, id=travel_id)
+
+            serialized_travel = TravelSerializer(travel)
+            return Response(serialized_travel.data, status=status.HTTP_200_OK)
+        except AllergicUser.DoesNotExist:
+            return Response({"Error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+        except Travel.DoesNotExist:
+            return Response({"Error": "Travel not found."}, status=status.HTTP_404_NOT_FOUND)
