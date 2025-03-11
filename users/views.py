@@ -3,8 +3,10 @@ from .models import *
 from rest_framework.response import Response
 from drf_yasg.utils import swagger_auto_schema
 import rest_framework.status as status
-from .serializers import UserSerializer, TravelSerializer
+from .serializers import UserSerializer, TravelSerializer, LoginSerializer, RegisterSerializer
 from drf_yasg import openapi
+from rest_framework.decorators import action
+from rest_framework_simplejwt.tokens import RefreshToken
 
 
 class UserView(ViewSet):
@@ -23,6 +25,45 @@ class UserView(ViewSet):
 
         serialized_user = UserSerializer(user)
         return Response(serialized_user.data, status=status.HTTP_200_OK)
+
+    @swagger_auto_schema(
+        request_body=LoginSerializer,
+        responses={200: 'JWT Token', 401: 'Invalid credentials', 404: "User not found."})
+    @action(detail=False, methods=["post"], url_path="login")
+    def login(self, request):
+        username: str = request.data.get("username")
+        password: str = request.data.get("password")
+
+        try:
+            user = AllergicUser.objects.get(username=username)
+        except AllergicUser.DoesNotExist:
+            return Response({"Error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        if user.check_password(password):
+            refresh = RefreshToken.for_user(user)
+            return Response({
+                "refresh": str(refresh),
+                "access": str(refresh.access_token)
+            })
+
+        return Response({"detail": "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED)
+
+    @swagger_auto_schema(
+        request_body=RegisterSerializer,
+        responses={200: UserSerializer, 400: "Invalid Data"})
+    @action(detail=False, methods=["post"], url_path="register")
+    def register(self, request):
+        serializer = RegisterSerializer(data=request.data)
+        if serializer.is_valid():
+            user = serializer.save()
+
+            refresh = RefreshToken.for_user(user)
+            return Response({
+                "refresh": str(refresh),
+                "access": str(refresh.access_token)
+            })
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class TravelView(ViewSet):

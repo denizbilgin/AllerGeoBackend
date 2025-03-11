@@ -11,6 +11,12 @@ urlpatterns = [
     path("<int:pk>", views.UserView.as_view({
         "get": "retrieve"
     })),
+    path("login", views.UserView.as_view({
+        "post": "login"
+    }), name="login"),
+    path("register", views.UserView.as_view({
+        "post": "register"
+    }), name="register"),
     path("<int:pk>/allergies", UserAllergyView.as_view({
         "get": "retrieve_user_allergies",
         "post": "create",

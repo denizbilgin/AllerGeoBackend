@@ -40,6 +40,26 @@ class UserSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
+class LoginSerializer(serializers.Serializer):
+    username = serializers.CharField()
+    password = serializers.CharField(write_only=True)
+
+
+class RegisterSerializer(serializers.ModelSerializer):
+    residence_district_id = serializers.IntegerField(write_only=True)
+
+    class Meta:
+        model = AllergicUser
+        fields = ["username", "first_name", "last_name", "date_of_birth", "phone_number", "residence_district_id", "password", "is_male", "email"]
+        extra_kwargs = {
+            "password": {"write_only": True}
+        }
+
+        def create(self, validated_data):
+            user = AllergicUser.objects.create_user(**validated_data)
+            return user
+
+
 class TravelSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)
     user_id = serializers.IntegerField(write_only=True)
