@@ -12,6 +12,12 @@ class UserSerializer(serializers.ModelSerializer):
     last_name = serializers.CharField(max_length=150, min_length=2)
     email = serializers.CharField(max_length=254, min_length=3)
     phone_number = serializers.CharField(max_length=15)
+    is_male = serializers.BooleanField()
+
+    age = serializers.SerializerMethodField(read_only=True)
+
+    def get_age(self, obj):
+        return obj.age
 
     def validate(self, attrs):
         if self.partial:
