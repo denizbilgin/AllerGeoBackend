@@ -1,4 +1,6 @@
-from rest_framework.viewsets import ViewSet
+from rest_framework.viewsets import ViewSet, ModelViewSet
+
+from common.FundamentalPermission import FundamentalPermission
 from .models import *
 from rest_framework.response import Response
 from drf_yasg.utils import swagger_auto_schema
@@ -9,7 +11,13 @@ from drf_yasg import openapi
 from predictors.serializers import *
 
 
-class AIModelView(ViewSet, mixins.CreateModelMixin):
+class AIModelView(ModelViewSet, mixins.CreateModelMixin):
+    queryset = AIModel.objects.all()
+    serializer_class = AIModelSerializer
+
+    permission_classes = [FundamentalPermission]
+    permission_type = 'view'
+
     parser_classes = (MultiPartParser, FormParser)
 
     @swagger_auto_schema(responses={200: AIModelSerializer(many=True)})
@@ -99,7 +107,13 @@ class AIModelView(ViewSet, mixins.CreateModelMixin):
             return Response({"Error": "AI Model not found."}, status=status.HTTP_404_NOT_FOUND)
 
 
-class AIAllergyAttackPredictionView(ViewSet):
+class AIAllergyAttackPredictionView(ModelViewSet):
+    queryset = AIAllergyAttackPrediction.objects.all()
+    serializer_class = AIAllergyAttackPredictionSerializer
+
+    permission_classes = [FundamentalPermission]
+    permission_type = 'crud'
+
     @swagger_auto_schema(responses={200: AIAllergyAttackPredictionSerializer(many=True)})
     def list(self, request):
         ai_allergy_attack_predictions = AIAllergyAttackPrediction.objects.all()
