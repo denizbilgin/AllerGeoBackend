@@ -5,6 +5,7 @@ class FundamentalPermission(BasePermission):
     __permissions_dict: dict[str, str] = {
         'list': 'view',
         'retrieve': 'view',
+        'fetch': 'view',
         'create': 'add',
         'partial_update': 'change',
         'update': 'change',

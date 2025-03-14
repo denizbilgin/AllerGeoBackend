@@ -1,4 +1,5 @@
-from rest_framework.viewsets import ViewSet
+from rest_framework.viewsets import ModelViewSet, ViewSet
+from common.FundamentalPermission import FundamentalPermission
 from common.utilities import turkish_uppercase, find_similar_place
 from rest_framework.response import Response
 from drf_yasg.utils import swagger_auto_schema
@@ -7,7 +8,13 @@ import rest_framework.status as status
 from drf_yasg import openapi
 
 
-class CityView(ViewSet):
+class CityView(ModelViewSet):
+    queryset = City.objects.all()
+    serializer_class = CitySerializer
+
+    permission_classes = [FundamentalPermission]
+    permission_type = 'view'
+
     @swagger_auto_schema(responses={200: CitySerializer(many=True)})
     def list(self, request):
         cities = City.objects.all()
@@ -80,7 +87,13 @@ class CityView(ViewSet):
             return Response({"Error": "City not found."}, status=status.HTTP_404_NOT_FOUND)
 
 
-class DistrictView(ViewSet):
+class DistrictView(ModelViewSet):
+    queryset = District.objects.all()
+    serializer_class = DistrictSerializer
+
+    permission_classes = [FundamentalPermission]
+    permission_type = 'view'
+
     @swagger_auto_schema(responses={200: DistrictSerializer(many=True)})
     def list(self, request):
         districts = District.objects.all()
