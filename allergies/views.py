@@ -1,17 +1,21 @@
 from rest_framework.viewsets import ModelViewSet, ViewSet
-from .models import *
+from rest_framework.decorators import action
+from common.FundamentalPermission import FundamentalPermission
 from .serializers import *
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework.response import Response
 import rest_framework.status as status
 from drf_yasg import openapi
-from AllerGeoBackend.utilities import turkish_capitalize
+from common.utilities import turkish_capitalize
 from users.models import AllergicUser
 
 
 class AllergenTypeView(ModelViewSet):
     queryset = AllergenType.objects.all()
     serializer_class = AllergenTypeSerializer
+
+    permission_classes = [FundamentalPermission]
+    permission_type = 'view'
 
     @swagger_auto_schema(responses={200: AllergenSerializer(many=True), 404: "Allergen Type not found."})
     def retrieve_allergens_by_type(self, request, pk=None):
@@ -25,7 +29,13 @@ class AllergenTypeView(ModelViewSet):
         return Response(serialized_filtered_allergens.data, status=status.HTTP_200_OK)
 
 
-class AllergenView(ViewSet):
+class AllergenView(ModelViewSet):
+    queryset = Allergen.objects.all()
+    serializer_class = AllergenSerializer
+
+    permission_classes = [FundamentalPermission]
+    permission_type = 'view'
+
     @swagger_auto_schema(responses={200: AllergenSerializer(many=True)})
     def list(self, request):
         allergens = Allergen.objects.all()
@@ -105,8 +115,17 @@ class CommonRegionView(ModelViewSet):
     queryset = CommonRegion.objects.all()
     serializer_class = CommonRegionSerializer
 
+    permission_classes = [FundamentalPermission]
+    permission_type = 'view'
 
-class AllergenRegionView(ViewSet):
+
+class AllergenRegionView(ModelViewSet):
+    queryset = AllergenRegion.objects.all()
+    serializer_class = AllergenRegionSerializer
+
+    permission_classes = [FundamentalPermission]
+    permission_type = 'view'
+
     @swagger_auto_schema(responses={200: AllergenRegionSerializer, 404: "Allergen not found."})
     def retrieve_by_allergen(self, request, pk=None):
         try:
@@ -181,7 +200,13 @@ class AllergenRegionView(ViewSet):
                             status=status.HTTP_404_NOT_FOUND)
 
 
-class UserAllergyView(ViewSet):
+class UserAllergyView(ModelViewSet):
+    queryset = UserAllergy.objects.all()
+    serializer_class = UserAllergySerializer
+
+    permission_classes = [FundamentalPermission]
+    permission_type = 'crud'
+
     @swagger_auto_schema(responses={200: UserAllergySerializer(many=True), 404: "User not found."})
     def retrieve_user_allergies(self, request, pk=None):
         try:

@@ -1,6 +1,5 @@
 from rest_framework.viewsets import ViewSet
-from AllerGeoBackend.utilities import turkish_uppercase, find_similar_place
-from .models import *
+from common.utilities import turkish_uppercase, find_similar_place
 from rest_framework.response import Response
 from drf_yasg.utils import swagger_auto_schema
 from .serializers import *

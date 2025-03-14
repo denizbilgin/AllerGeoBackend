@@ -12,6 +12,8 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 import json
 from pathlib import Path
 
+from rest_framework.permissions import IsAuthenticated
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -48,7 +50,8 @@ INSTALLED_APPS = [
     "rest_framework",
     "drf_yasg",
     "corsheaders",
-    "rest_framework_simplejwt"
+    "rest_framework_simplejwt",
+    "common"
 ]
 
 MIDDLEWARE = [
@@ -153,4 +156,18 @@ REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
         "rest_framework_simplejwt.authentication.JWTAuthentication"
     ]
+}
+
+SWAGGER_SETTINGS = {
+    'SECURITY_DEFINITIONS': {
+        'JWT': {
+            'type': 'apiKey',
+            'in': 'header',
+            'name': 'Authorization',
+            'description': 'JWT token başlıkta gönderilmeli. Örnek: "Bearer <token>"'
+        }
+    },
+    'DEFAULT_PERMISSION_CLASSES': [
+        IsAuthenticated,  # JWT doğrulaması için oturum açmış kullanıcı
+    ],
 }

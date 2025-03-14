@@ -7,6 +7,7 @@ from .serializers import UserSerializer, TravelSerializer, LoginSerializer, Regi
 from drf_yasg import openapi
 from rest_framework.decorators import action
 from rest_framework_simplejwt.tokens import RefreshToken
+from django.contrib.auth.models import Group
 
 
 class UserView(ViewSet):
@@ -56,6 +57,11 @@ class UserView(ViewSet):
         serializer = RegisterSerializer(data=request.data)
         if serializer.is_valid():
             user = serializer.save()
+            user.set_password(user.password)
+            user.save()
+
+            users_group = Group.objects.get(name="Users")
+            user.groups.add(users_group)
 
             refresh = RefreshToken.for_user(user)
             return Response({
@@ -83,9 +89,9 @@ class TravelView(ViewSet):
             type=openapi.TYPE_OBJECT,
             properties={
                 'start_date': openapi.Schema(type=openapi.TYPE_STRING, format=openapi.FORMAT_DATETIME,
-                                       description="Date and time in ISO 8601 format (e.g., 2025-01-05T14:30:00Z)"),
+                                             description="Date and time in ISO 8601 format (e.g., 2025-01-05T14:30:00Z)"),
                 "return_date": openapi.Schema(type=openapi.TYPE_STRING, format=openapi.FORMAT_DATETIME,
-                                       description="Date and time in ISO 8601 format (e.g., 2025-01-05T14:30:00Z)")
+                                              description="Date and time in ISO 8601 format (e.g., 2025-01-05T14:30:00Z)")
             },
             required=['start_date', "return_date"]),
         responses={201: TravelSerializer, 400: "Invalid Data"})
@@ -103,9 +109,9 @@ class TravelView(ViewSet):
             type=openapi.TYPE_OBJECT,
             properties={
                 'start_date': openapi.Schema(type=openapi.TYPE_STRING, format=openapi.FORMAT_DATETIME,
-                                       description="Date and time in ISO 8601 format (e.g., 2025-01-05T14:30:00Z)"),
+                                             description="Date and time in ISO 8601 format (e.g., 2025-01-05T14:30:00Z)"),
                 "return_date": openapi.Schema(type=openapi.TYPE_STRING, format=openapi.FORMAT_DATETIME,
-                                       description="Date and time in ISO 8601 format (e.g., 2025-01-05T14:30:00Z)")
+                                              description="Date and time in ISO 8601 format (e.g., 2025-01-05T14:30:00Z)")
             }),
         responses={200: TravelSerializer, 400: "Invalid Data", 404: "User or Travel not found."})
     def partial_update(self, request, pk=None, travel_id=None):
