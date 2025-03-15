@@ -1,4 +1,6 @@
-from rest_framework.viewsets import ViewSet
+from rest_framework.viewsets import ViewSet, ModelViewSet
+
+from common.FundamentalPermission import FundamentalPermission
 from .models import *
 from rest_framework.response import Response
 from drf_yasg.utils import swagger_auto_schema
@@ -10,12 +12,21 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth.models import Group
 
 
-class UserView(ViewSet):
-    @swagger_auto_schema(responses={200: UserSerializer(many=True)})
+class UserView(ModelViewSet):
+    queryset = AllergicUser.objects.all()
+    serializer_class = UserSerializer
+
+    permission_classes = [FundamentalPermission]
+    permission_type = 'crud'
+
+    @swagger_auto_schema(responses={200: UserSerializer(many=True), 403: "You do not have permission to perform this action."})
     def list(self, request):
-        allergic_user = AllergicUser.objects.select_related("residence_district").all()
-        serialized_allergic_user = UserSerializer(allergic_user, many=True)
-        return Response(serialized_allergic_user.data, status=status.HTTP_200_OK)
+        if request.user.is_superuser:
+            allergic_user = AllergicUser.objects.select_related("residence_district").all()
+            serialized_allergic_user = UserSerializer(allergic_user, many=True)
+            return Response(serialized_allergic_user.data, status=status.HTTP_200_OK)
+        else:
+            return Response({"Error": "You do not have permission to do this action."}, status=status.HTTP_403_FORBIDDEN)
 
     @swagger_auto_schema(responses={200: UserSerializer(), 404: "User not found."})
     def retrieve(self, request, pk=None):
@@ -72,7 +83,13 @@ class UserView(ViewSet):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class TravelView(ViewSet):
+class TravelView(ModelViewSet):
+    queryset = Travel.objects.all()
+    serializer_class = TravelSerializer
+
+    permission_classes = [FundamentalPermission]
+    permission_type = 'crud'
+
     @swagger_auto_schema(responses={200: TravelSerializer(many=True), 404: "User not found."})
     def retrieve_user_travels(self, request, pk=None):
         try:

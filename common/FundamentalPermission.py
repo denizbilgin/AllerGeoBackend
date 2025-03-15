@@ -15,14 +15,23 @@ class FundamentalPermission(BasePermission):
 
     __allowed_permission_types: list[str] = ['view', 'crud']
 
+    def _get_permission_code(self, action, model_class):
+        app_label = model_class.model._meta.app_label
+        model_name = model_class.model._meta.model_name
+        permission_action = self.__permissions_dict.get(action)
+
+        if not permission_action:
+            return None
+
+        return f'{app_label}.{permission_action}_{model_name}'
+
     def has_permission(self, request, view):
         permission_type = getattr(view, 'permission_type', 'view')
         action = getattr(view, 'action', None).split('_')[0]
         model_class = getattr(view, 'queryset', None)
 
-        print('Is Authenticated: ', not request.user.is_authenticated)
-        print('Action: ', not action)
-        print('Model Class: ', not model_class)
+        if action in ["login", "register"] or request.user.is_superuser:
+            return True
 
         if not request.user.is_authenticated or not action or not model_class or permission_type not in self.__allowed_permission_types:
             return False
@@ -30,13 +39,9 @@ class FundamentalPermission(BasePermission):
         if permission_type == 'view' and request.method not in SAFE_METHODS:
             return False
 
-        app_label = model_class.model._meta.app_label
-        model_name = model_class.model._meta.model_name
-
-        permission_action = self.__permissions_dict.get(action)
-
-        if not permission_action:
+        user_id = request.parser_context['kwargs'].get('pk')
+        if user_id and (str(request.user.id) != str(user_id)):
             return False
 
-        permission_code = f'{app_label}.{permission_action}_{model_name}'
+        permission_code = self._get_permission_code(action, model_class)
         return request.user.has_perm(permission_code)
