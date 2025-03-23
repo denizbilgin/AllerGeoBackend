@@ -9,14 +9,21 @@ urlpatterns = [
         "get": "list"
     })),
     path("<int:pk>", views.UserView.as_view({
-        "get": "retrieve"
+        "get": "retrieve",
+        "patch": 'update'
     })),
     path("login", views.UserView.as_view({
         "post": "login"
-    }), name="login"),
+    })),
     path("register", views.UserView.as_view({
         "post": "register"
-    }), name="register"),
+    })),
+    path("refresh-token", views.UserView.as_view({
+        "post": "refresh_token"
+    })),
+    path("logout", views.UserView.as_view({
+        "post": "logout"
+    })),
     path("<int:pk>/allergies", UserAllergyView.as_view({
         "get": "retrieve_user_allergies",
         "post": "create",

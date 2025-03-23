@@ -1,4 +1,6 @@
 from rest_framework import serializers
+
+from places.models import District
 from places.serializers import DistrictSerializer
 from users.models import AllergicUser, Travel
 
@@ -38,6 +40,35 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = AllergicUser
         fields = "__all__"
+
+
+class UserUpdateSerializer(serializers.ModelSerializer):
+    residence_district = serializers.PrimaryKeyRelatedField(queryset=District.objects.all())
+    date_of_birth = serializers.DateField(format="%Y-%m-%d")
+
+    class Meta:
+        model = AllergicUser
+        fields = [
+            'username',
+            'first_name',
+            'last_name',
+            'email',
+            'phone_number',
+            'date_of_birth',
+            'residence_district'
+        ]
+
+    def update(self, instance, validated_data):
+        instance.username = validated_data.get('username', instance.username)
+        instance.first_name = validated_data.get('first_name', instance.first_name)
+        instance.last_name = validated_data.get('last_name', instance.last_name)
+        instance.email = validated_data.get('email', instance.email)
+        instance.phone_number = validated_data.get('phone_number', instance.phone_number)
+        instance.date_of_birth = validated_data.get('date_of_birth', instance.date_of_birth)
+        instance.residence_district = validated_data.get('residence_district', instance.residence_district)
+
+        instance.save()
+        return instance
 
 
 class LoginSerializer(serializers.Serializer):

@@ -1,15 +1,17 @@
-from rest_framework.viewsets import ViewSet, ModelViewSet
-
+from rest_framework.viewsets import ModelViewSet
+from rest_framework_simplejwt.tokens import AccessToken
 from common.FundamentalPermission import FundamentalPermission
 from .models import *
 from rest_framework.response import Response
 from drf_yasg.utils import swagger_auto_schema
 import rest_framework.status as status
-from .serializers import UserSerializer, TravelSerializer, LoginSerializer, RegisterSerializer
+from .serializers import UserSerializer, TravelSerializer, LoginSerializer, RegisterSerializer, UserUpdateSerializer
 from drf_yasg import openapi
 from rest_framework.decorators import action
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth.models import Group
+from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.exceptions import TokenError
 
 
 class UserView(ModelViewSet):
@@ -41,7 +43,6 @@ class UserView(ModelViewSet):
     @swagger_auto_schema(
         request_body=LoginSerializer,
         responses={200: 'JWT Token', 401: 'Invalid credentials', 404: "User not found."})
-    @action(detail=False, methods=["post"], url_path="login")
     def login(self, request):
         username: str = request.data.get("username")
         password: str = request.data.get("password")
@@ -63,7 +64,6 @@ class UserView(ModelViewSet):
     @swagger_auto_schema(
         request_body=RegisterSerializer,
         responses={200: UserSerializer, 400: "Invalid Data"})
-    @action(detail=False, methods=["post"], url_path="register")
     def register(self, request):
         serializer = RegisterSerializer(data=request.data)
         if serializer.is_valid():
@@ -82,6 +82,60 @@ class UserView(ModelViewSet):
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+    @swagger_auto_schema(
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'refresh': openapi.Schema(type=openapi.TYPE_STRING),
+            },
+            required=['refresh']),
+        responses={200: 'New Access Token', 401: 'Invalid Refresh Token.'})
+    def refresh_token(self, request):
+        refresh_token = request.data.get("refresh")
+
+        if not refresh_token:
+            return Response({"Error": "Refresh token is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            refresh = RefreshToken(refresh_token)
+            new_access_token = str(refresh.access_token)
+            return Response({"access": new_access_token}, status=status.HTTP_200_OK)
+        except TokenError:
+            return Response({"Error": "Invalid refresh token."}, status=status.HTTP_401_UNAUTHORIZED)
+
+    @swagger_auto_schema(
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'refresh': openapi.Schema(type=openapi.TYPE_STRING),
+            },
+            required=['refresh']),
+        responses={200: 'Successfully logged out', 400: 'Invalid request'})
+    def logout(self, request):
+        try:
+            refresh_token = request.data.get("refresh")
+            token = RefreshToken(refresh_token)
+            token.blacklist()
+            return Response({"detail": "Successfully logged out"}, status=status.HTTP_200_OK)
+        except TokenError:
+            return Response({"Error": "Invalid token."}, status=status.HTTP_400_BAD_REQUEST)
+
+    @swagger_auto_schema(
+        request_body=UserUpdateSerializer,
+        responses={200: UserSerializer(), 400: "Invalid Data", 404: "User not found."})
+    def update(self, request, pk=None):
+        try:
+            user = AllergicUser.objects.get(pk=pk)
+        except AllergicUser.DoesNotExist:
+            return Response({"Error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = UserUpdateSerializer(user, data=request.data, partial=True)
+        if serializer.is_valid():
+            updated_user = serializer.save()
+            serialized_user = UserSerializer(updated_user)
+            return Response(serialized_user.data, status=status.HTTP_200_OK)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class TravelView(ModelViewSet):
     queryset = Travel.objects.all()

@@ -30,7 +30,7 @@ class FundamentalPermission(BasePermission):
         action = getattr(view, 'action', None).split('_')[0]
         model_class = getattr(view, 'queryset', None)
 
-        if action in ["login", "register"] or request.user.is_superuser:
+        if action in ["login", "register", 'refresh', 'logout', 'is'] or request.user.is_superuser:
             return True
 
         if not request.user.is_authenticated or not action or not model_class or permission_type not in self.__allowed_permission_types:

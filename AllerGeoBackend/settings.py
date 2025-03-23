@@ -11,7 +11,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 import json
 from pathlib import Path
-
+from datetime import timedelta
 from rest_framework.permissions import IsAuthenticated
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -23,6 +23,15 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-y$9!s$+097#j3+hw5wej_0=z(bdejm@wii8!bni1xtrqx8a4b#'
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=15),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=30),
+    'ROTATE_REFRESH_TOKENS': False,
+    'BLACKLIST_AFTER_ROTATION': True,
+    'ALGORITHM': 'HS256',
+    'SIGNING_KEY': SECRET_KEY,
+}
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -51,7 +60,8 @@ INSTALLED_APPS = [
     "drf_yasg",
     "corsheaders",
     "rest_framework_simplejwt",
-    "common"
+    "common",
+    'rest_framework_simplejwt.token_blacklist',
 ]
 
 MIDDLEWARE = [
@@ -164,10 +174,10 @@ SWAGGER_SETTINGS = {
             'type': 'apiKey',
             'in': 'header',
             'name': 'Authorization',
-            'description': 'JWT token başlıkta gönderilmeli. Örnek: "Bearer <token>"'
+            'description': 'JWT token başlıkta gönderilmeli. Örnek: "Bearer {your_token}"'
         }
     },
     'DEFAULT_PERMISSION_CLASSES': [
-        IsAuthenticated,  # JWT doğrulaması için oturum açmış kullanıcı
+        IsAuthenticated,
     ],
 }
