@@ -31,9 +31,9 @@ class UserView(ModelViewSet):
             return Response({"Error": "You do not have permission to do this action."}, status=status.HTTP_403_FORBIDDEN)
 
     @swagger_auto_schema(responses={200: UserSerializer(), 404: "User not found."})
-    def retrieve(self, request, pk=None):
+    def retrieve(self, request, user_id=None):
         try:
-            user = AllergicUser.objects.get(pk=pk)
+            user = AllergicUser.objects.get(pk=user_id)
         except AllergicUser.DoesNotExist:
             return Response({"Error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
 
@@ -123,9 +123,9 @@ class UserView(ModelViewSet):
     @swagger_auto_schema(
         request_body=UserUpdateSerializer,
         responses={200: UserSerializer(), 400: "Invalid Data", 404: "User not found."})
-    def update(self, request, pk=None):
+    def update(self, request, user_id=None):
         try:
-            user = AllergicUser.objects.get(pk=pk)
+            user = AllergicUser.objects.get(pk=user_id)
         except AllergicUser.DoesNotExist:
             return Response({"Error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
 
@@ -145,9 +145,9 @@ class TravelView(ModelViewSet):
     permission_type = 'crud'
 
     @swagger_auto_schema(responses={200: TravelSerializer(many=True), 404: "User not found."})
-    def retrieve_user_travels(self, request, pk=None):
+    def retrieve_user_travels(self, request, user_id=None):
         try:
-            user = AllergicUser.objects.get(pk=pk)
+            user = AllergicUser.objects.get(pk=user_id)
         except AllergicUser.DoesNotExist:
             return Response({"Error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
 
@@ -166,8 +166,8 @@ class TravelView(ModelViewSet):
             },
             required=['start_date', "return_date"]),
         responses={201: TravelSerializer, 400: "Invalid Data"})
-    def create(self, request, pk=None):
-        request.data["user"] = pk
+    def create(self, request, user_id=None):
+        request.data["user"] = user_id
         serializer = TravelSerializer(data=request.data)
         if serializer.is_valid():
             user_travels = serializer.save()
@@ -185,9 +185,9 @@ class TravelView(ModelViewSet):
                                               description="Date and time in ISO 8601 format (e.g., 2025-01-05T14:30:00Z)")
             }),
         responses={200: TravelSerializer, 400: "Invalid Data", 404: "User or Travel not found."})
-    def partial_update(self, request, pk=None, travel_id=None):
+    def partial_update(self, request, user_id=None, travel_id=None):
         try:
-            user = AllergicUser.objects.get(pk=pk)
+            user = AllergicUser.objects.get(pk=user_id)
             travel = Travel.objects.get(pk=travel_id, user=user)
         except AllergicUser.DoesNotExist:
             return Response({"Error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
@@ -201,9 +201,9 @@ class TravelView(ModelViewSet):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     @swagger_auto_schema(responses={204: "No Content", 404: "User or Travel not found"})
-    def destroy(self, request, pk=None, travel_id=None):
+    def destroy(self, request, user_id=None, travel_id=None):
         try:
-            user = AllergicUser.objects.get(pk=pk)
+            user = AllergicUser.objects.get(pk=user_id)
             travel = Travel.objects.get(user=user, pk=travel_id)
             travel.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
@@ -214,9 +214,9 @@ class TravelView(ModelViewSet):
 
     @swagger_auto_schema(
         responses={200: TravelSerializer, 404: "User or Travel not found."})
-    def retrieve_travel(self, request, pk=None, travel_id=None):
+    def retrieve_travel(self, request, user_id=None, travel_id=None):
         try:
-            user = AllergicUser.objects.get(pk=pk)
+            user = AllergicUser.objects.get(pk=user_id)
             travel = Travel.objects.get(user=user, id=travel_id)
 
             serialized_travel = TravelSerializer(travel)

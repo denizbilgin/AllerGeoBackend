@@ -208,9 +208,9 @@ class UserAllergyView(ModelViewSet):
     permission_type = 'crud'
 
     @swagger_auto_schema(responses={200: UserAllergySerializer(many=True), 404: "User not found."})
-    def retrieve_user_allergies(self, request, pk=None):
+    def retrieve_user_allergies(self, request, user_id=None):
         try:
-            user = AllergicUser.objects.get(pk=pk)
+            user = AllergicUser.objects.get(pk=user_id)
         except AllergicUser.DoesNotExist:
             return Response({"Error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
 
@@ -227,8 +227,8 @@ class UserAllergyView(ModelViewSet):
             },
             required=['allergen_id', 'importance_level']),
         responses={201: UserAllergySerializer, 400: "Invalid Data"})
-    def create(self, request, pk=None):
-        request.data["user_id"] = pk
+    def create(self, request, user_id=None):
+        request.data["user_id"] = user_id
         serializer = UserAllergySerializer(data=request.data)
         if serializer.is_valid():
             user_allergy = serializer.save()
@@ -237,9 +237,9 @@ class UserAllergyView(ModelViewSet):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     @swagger_auto_schema(responses={204: "No Content", 404: "User or User Allergy not found"})
-    def destroy(self, request, pk=None, user_allergy_id=None):
+    def destroy(self, request, user_id=None, user_allergy_id=None):
         try:
-            user = AllergicUser.objects.get(pk=pk)
+            user = AllergicUser.objects.get(pk=user_id)
             user_allergy = UserAllergy.objects.get(user=user, id=user_allergy_id)
             user_allergy.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
@@ -249,9 +249,9 @@ class UserAllergyView(ModelViewSet):
             return Response({"Error": "User Allergy not found."}, status=status.HTTP_404_NOT_FOUND)
 
     @swagger_auto_schema(responses={200: UserAllergySerializer, 404: "User or User Allergy not found."})
-    def retrieve_user_allergy(self, request, pk=None, user_allergy_id=None):
+    def retrieve_user_allergy(self, request, user_id=None, user_allergy_id=None):
         try:
-            user = AllergicUser.objects.get(pk=pk)
+            user = AllergicUser.objects.get(pk=user_id)
             user_allergy = UserAllergy.objects.get(user=user, id=user_allergy_id)
             serialized_user_allergy = UserAllergySerializer(user_allergy)
             return Response(serialized_user_allergy.data, status=status.HTTP_200_OK)
@@ -268,9 +268,9 @@ class UserAllergyView(ModelViewSet):
                 'importance_level': openapi.Schema(type=openapi.TYPE_INTEGER)
             }),
         responses={200: UserAllergySerializer, 400: "Invalid Data", 404: "User or User Allergy not found"})
-    def partial_update(self, request, pk=None, user_allergy_id=None):
+    def partial_update(self, request, user_id=None, user_allergy_id=None):
         try:
-            user = AllergicUser.objects.get(pk=pk)
+            user = AllergicUser.objects.get(pk=user_id)
             user_allergy = UserAllergy.objects.get(user=user, id=user_allergy_id)
         except AllergicUser.DoesNotExist:
             return Response({"Error": "User not found."}, status=status.HTTP_404_NOT_FOUND)

@@ -39,7 +39,7 @@ class FundamentalPermission(BasePermission):
         if permission_type == 'view' and request.method not in SAFE_METHODS:
             return False
 
-        user_id = request.parser_context['kwargs'].get('pk')
+        user_id = request.parser_context['kwargs'].get('user_id')
         if user_id and (str(request.user.id) != str(user_id)):
             return False
 
