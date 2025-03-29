@@ -103,7 +103,10 @@ class PlantNet(IVegetationCollector):
             images = []
             image_elements = article.find_elements(By.TAG_NAME, "img")
             for image_element in image_elements:
-                images.append(image_element.get_attribute("src"))
+                image_link = image_element.get_attribute("src")
+                if not image_link.lower().endswith(('.jpg', '.jpeg', '.png', '.webp')):
+                    image_link += ".jpg"
+                images.append(image_link) 
 
             gbif_link_element = article.find_element(By.XPATH, ".//a[contains(text(), 'GBIF')]")
             gbif_link = gbif_link_element.get_attribute("href")
