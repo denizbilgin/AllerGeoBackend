@@ -56,30 +56,6 @@ def turkish_uppercase(text: AnyStr) -> AnyStr:
     return text.translate(translation_table).upper()
 
 
-def similarity_ratio(string1: AnyStr, string2: AnyStr) -> float:
-    return SequenceMatcher(None, string1, string2).ratio()
-
-
-def find_similar_place(place_name: AnyStr, similarity_threshold: float = 0.3) -> Optional[AnyStr]:
-    districts = District.objects.all()
-    similar_names: Dict[float, AnyStr] = {}
-
-    def add_similar_name(name: AnyStr, score: float) -> None:
-        if len(place_name) == len(name) and score > similarity_threshold:
-            similar_names[score] = name
-
-    for district in districts:
-        city_similarity_score = similarity_ratio(place_name, district.city.name)
-        add_similar_name(district.city.name, city_similarity_score)
-
-        district_name_last_part = district.name.split(" ")[-1]
-        district_similarity_score = similarity_ratio(place_name, district_name_last_part)
-        add_similar_name(district_name_last_part, district_similarity_score)
-    if not similar_names:
-        return None
-    return similar_names[max(similar_names.keys())]
-
-
 def define_user_photo_path(instance, filename: str) -> AnyStr:
     name_slug = slugify(f"{instance.first_name}_{instance.last_name}")
     extension = os.path.splitext(filename)[1]

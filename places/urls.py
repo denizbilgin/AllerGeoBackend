@@ -11,11 +11,14 @@ urlpatterns = [
         #"patch": "partial_update",
         #"delete": "destroy"
     })),
-    path("cities/<str:name>", views.CityView.as_view({
-        "get": "retrieve_by_name"
-    })),
     path("cities/<int:pk>/vegetation", views.CityView.as_view({
         "get": "fetch_vegetation_data"
+    })),
+    path("cities/retrieve-by-coordinates", views.CityView.as_view({
+        "get": "retrieve_city_by_coordinates"
+    })),
+    path("cities/<str:name>", views.CityView.as_view({
+        "get": "retrieve_by_name"
     })),
     path("districts", views.DistrictView.as_view({
         "get": "list",
@@ -26,10 +29,13 @@ urlpatterns = [
         #"patch": "partial_update",
         #"delete": "destroy"
     })),
-    path("districts/<str:name>", views.DistrictView.as_view({
-        "get": "retrieve_by_name"
-    })),
     path("districts/<int:pk>/vegetation", views.DistrictView.as_view({
         "get": "fetch_vegetation_data"
+    })),
+    path("districts/retrieve-by-coordinates", views.DistrictView.as_view({
+        "get": "retrieve_district_by_coordinates"
+    })),
+    path("districts/<str:name>", views.DistrictView.as_view({
+        "get": "retrieve_by_name"
     })),
 ]

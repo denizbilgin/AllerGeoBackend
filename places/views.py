@@ -1,6 +1,7 @@
+from django.db.models import Q
 from rest_framework.viewsets import ModelViewSet, ViewSet
 from common.FundamentalPermission import FundamentalPermission
-from common.utilities import turkish_uppercase, find_similar_place
+from common.utilities import turkish_uppercase
 from rest_framework.response import Response
 from drf_yasg.utils import swagger_auto_schema
 from .serializers import *
@@ -39,7 +40,8 @@ class CityView(ModelViewSet):
         except City.DoesNotExist:
             return Response({"Error": "City not found."}, status=status.HTTP_404_NOT_FOUND)
 
-    @swagger_auto_schema(request_body=CitySerializer, responses={200: CitySerializer, 400: "Invalid Data", 404: "City Not Found"})
+    @swagger_auto_schema(request_body=CitySerializer,
+                         responses={200: CitySerializer, 400: "Invalid Data", 404: "City Not Found"})
     def partial_update(self, request, pk=None):
         try:
             city = City.objects.get(pk=pk)
@@ -65,8 +67,7 @@ class CityView(ModelViewSet):
     def retrieve_by_name(self, request, name=None):
         name = turkish_uppercase(name)
         try:
-            name = find_similar_place(name).strip()
-            city = City.objects.get(name=name)
+            city = City.objects.filter(name__icontains=name).first()
             serialized_city = CitySerializer(city)
             return Response(serialized_city.data, status=status.HTTP_200_OK)
         except City.DoesNotExist:
@@ -85,6 +86,26 @@ class CityView(ModelViewSet):
             return Response(serialized_vegetation_data.data, status=status.HTTP_200_OK)
         except City.DoesNotExist:
             return Response({"Error": "City not found."}, status=status.HTTP_404_NOT_FOUND)
+
+    @swagger_auto_schema(
+        manual_parameters=[
+            openapi.Parameter('latitude', openapi.IN_QUERY, type=openapi.TYPE_NUMBER, required=True),
+            openapi.Parameter('longitude', openapi.IN_QUERY, type=openapi.TYPE_NUMBER, required=True)
+        ], responses={200: CitySerializer, 404: "City not found"})
+    def retrieve_city_by_coordinates(self, request):
+        latitude = float(request.query_params.get('latitude'))
+        longitude = float(request.query_params.get('longitude'))
+        try:
+            city = City.objects.filter(
+                Q(southwest_latitude__lte=latitude, northeast_latitude__gte=latitude) &
+                Q(southwest_longitude__lte=longitude, northeast_longitude__gte=longitude)
+            ).first()
+
+            if city:
+                return Response(CitySerializer(city).data, status=status.HTTP_200_OK)
+            return Response({"Error": "City not found."}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({"Error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class DistrictView(ModelViewSet):
@@ -113,7 +134,8 @@ class DistrictView(ModelViewSet):
                 'southwest_longitude': openapi.Schema(type=openapi.TYPE_NUMBER),
                 'city_id': openapi.Schema(type=openapi.TYPE_INTEGER)
             },
-            required=['name', 'latitude', 'longitude', 'northeast_latitude', 'northeast_longitude', 'southwest_latitude',
+            required=['name', 'latitude', 'longitude', 'northeast_latitude', 'northeast_longitude',
+                      'southwest_latitude',
                       "southwest_longitude", "city_id"]),
         responses={201: DistrictSerializer, 400: "Invalid Data"})
     def create(self, request):
@@ -146,7 +168,8 @@ class DistrictView(ModelViewSet):
                 'southwest_longitude': openapi.Schema(type=openapi.TYPE_NUMBER),
                 'city_id': openapi.Schema(type=openapi.TYPE_INTEGER)
             },
-            required=['name', 'latitude', 'longitude', 'northeast_latitude', 'northeast_longitude', 'southwest_latitude',
+            required=['name', 'latitude', 'longitude', 'northeast_latitude', 'northeast_longitude',
+                      'southwest_latitude',
                       "southwest_longitude", "city_id"]),
         responses={200: DistrictSerializer, 400: "Invalid Data", 404: "District Not Found"})
     def partial_update(self, request, pk=None):
@@ -174,8 +197,7 @@ class DistrictView(ModelViewSet):
     def retrieve_by_name(self, request, name=None):
         name = turkish_uppercase(name)
         try:
-            name = find_similar_place(name).strip()
-            district = District.objects.get(name=name)
+            district = District.objects.filter(name__icontains=name).first()
             serialized_district = DistrictSerializer(district)
             return Response(serialized_district.data, status=status.HTTP_200_OK)
         except District.DoesNotExist:
@@ -194,3 +216,24 @@ class DistrictView(ModelViewSet):
             return Response(serialized_vegetation_data.data, status=status.HTTP_200_OK)
         except District.DoesNotExist:
             return Response({"Error": "District not found."}, status=status.HTTP_404_NOT_FOUND)
+
+    @swagger_auto_schema(
+        manual_parameters=[
+            openapi.Parameter('latitude', openapi.IN_QUERY, type=openapi.TYPE_NUMBER, required=True),
+            openapi.Parameter('longitude', openapi.IN_QUERY, type=openapi.TYPE_NUMBER, required=True)
+        ], responses={200: DistrictSerializer, 404: "District not found"})
+    def retrieve_district_by_coordinates(self, request):
+        latitude = float(request.query_params.get('latitude'))
+        longitude = float(request.query_params.get('longitude'))
+
+        try:
+            district = District.objects.filter(
+                Q(northeast_latitude__gte=latitude, southwest_latitude__lte=latitude) &
+                Q(northeast_longitude__gte=longitude, southwest_longitude__lte=longitude)
+            ).first()
+
+            if district:
+                return Response(DistrictSerializer(district).data, status=status.HTTP_200_OK)
+            return Response({"Error": "District not found."}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({"Error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
