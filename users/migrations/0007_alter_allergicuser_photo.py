@@ -14,6 +14,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='allergicuser',
             name='photo',
-            field=models.ImageField(blank=True, null=True, upload_to=common.utilities.define_user_photo_path),
+            field=models.ImageField(blank=True, null=True, upload_to=common.utilities),
         ),
     ]

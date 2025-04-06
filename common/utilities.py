@@ -1,11 +1,5 @@
-from typing import AnyStr, Optional, Dict, List, TYPE_CHECKING
-from difflib import SequenceMatcher
-from django.utils.text import slugify
-import os
-from places.models import District
-from googletrans import Translator
-if TYPE_CHECKING:
-    from places.models import District
+from typing import AnyStr, TYPE_CHECKING
+from math import radians, sin, cos, sqrt, atan2
 
 
 def turkish_lowercase(text: AnyStr) -> AnyStr:
@@ -56,8 +50,17 @@ def turkish_uppercase(text: AnyStr) -> AnyStr:
     return text.translate(translation_table).upper()
 
 
-def define_user_photo_path(instance, filename: str) -> AnyStr:
-    name_slug = slugify(f"{instance.first_name}_{instance.last_name}")
-    extension = os.path.splitext(filename)[1]
-    photo_path = f"{instance.id}_{name_slug}{extension}"
-    return f"profile_photos/{photo_path}"
+def haversine(lat1, lon1, lat2, lon2) -> float:
+    R = 6371.0
+
+    d_lat = radians(lat2 - lat1)
+    d_lon = radians(lon2 - lon1)
+
+    a = sin(d_lat / 2)**2 + cos(radians(lat1)) * cos(radians(lat2)) * sin(d_lon / 2)**2
+    c = 2 * atan2(sqrt(a), sqrt(1 - a))
+
+    return R * c
+
+
+def is_inside_turkey(lat, lon):
+    return 36.0 <= lat <= 42.0 and 26.0 <= lon <= 45.0

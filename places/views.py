@@ -1,12 +1,13 @@
 from django.db.models import Q
-from rest_framework.viewsets import ModelViewSet, ViewSet
+from rest_framework.viewsets import ModelViewSet
 from common.FundamentalPermission import FundamentalPermission
-from common.utilities import turkish_uppercase
+from common.utilities import turkish_uppercase, haversine, is_inside_turkey
 from rest_framework.response import Response
 from drf_yasg.utils import swagger_auto_schema
 from .serializers import *
 import rest_framework.status as status
 from drf_yasg import openapi
+from typing import Optional
 
 
 class CityView(ModelViewSet):
@@ -223,10 +224,13 @@ class DistrictView(ModelViewSet):
             openapi.Parameter('longitude', openapi.IN_QUERY, type=openapi.TYPE_NUMBER, required=True)
         ], responses={200: DistrictSerializer, 404: "District not found"})
     def retrieve_district_by_coordinates(self, request):
-        latitude = float(request.query_params.get('latitude'))
-        longitude = float(request.query_params.get('longitude'))
-
         try:
+            latitude = float(request.query_params.get('latitude'))
+            longitude = float(request.query_params.get('longitude'))
+
+            if not is_inside_turkey(latitude, longitude):
+                return Response({"Error": "Coordinates are outside of Turkey."}, status=status.HTTP_400_BAD_REQUEST)
+
             district = District.objects.filter(
                 Q(northeast_latitude__gte=latitude, southwest_latitude__lte=latitude) &
                 Q(northeast_longitude__gte=longitude, southwest_longitude__lte=longitude)
@@ -234,6 +238,19 @@ class DistrictView(ModelViewSet):
 
             if district:
                 return Response(DistrictSerializer(district).data, status=status.HTTP_200_OK)
+
+            closest_district: Optional[District] = None
+            closest_distance = float('inf')
+            for d in District.objects.all():
+                center_lat = (d.northeast_latitude + d.southwest_latitude) / 2
+                center_lon = (d.northeast_longitude + d.southwest_longitude) / 2
+                distance = haversine(latitude, longitude, center_lat, center_lon)
+                if distance < closest_distance:
+                    closest_distance = distance
+                    closest_district = d
+
+            if closest_district:
+                return Response(DistrictSerializer(closest_district).data, status=status.HTTP_200_OK)
             return Response({"Error": "District not found."}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
             return Response({"Error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
