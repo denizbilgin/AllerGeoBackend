@@ -55,7 +55,7 @@ class AIAllergyAttackPredictionSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Invalid AI Model ID.")
 
         if selected_date and travel_id:
-            if not (travel.start_date <= selected_date <= travel.return_date):
+            if not (travel.start_date <= selected_date):
                 raise serializers.ValidationError(
                     {"date": "The selected date must be between the travel start and return date."}
                 )
