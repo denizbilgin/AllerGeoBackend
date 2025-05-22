@@ -1,6 +1,6 @@
 from django.db import models
 
-from allergies.models import Allergen
+from allergies.models import Allergen, CommonRegion
 from places.services.vegetation_collector import IVegetationCollector
 from places.services.plantnet import PlantNet
 
@@ -26,6 +26,8 @@ class Place(models.Model):
 
 
 class City(Place):
+    region = models.ForeignKey(CommonRegion, on_delete=models.PROTECT, db_column='region_id')
+
     class Meta:
         db_table = "cities"
         db_table_comment = "Table containing coordinate information of cities of Türkiye"

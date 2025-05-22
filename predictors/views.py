@@ -1,7 +1,7 @@
 from rest_framework.viewsets import ViewSet, ModelViewSet
-
+from django.db import connection
 from common.FundamentalPermission import FundamentalPermission
-from .models import *
+import pandas as pd
 from rest_framework.response import Response
 from drf_yasg.utils import swagger_auto_schema
 import rest_framework.status as status
@@ -105,6 +105,18 @@ class AIModelView(ModelViewSet, mixins.CreateModelMixin):
             return Response(serialized_ai_model.data, status=status.HTTP_200_OK)
         except AIModel.DoesNotExist:
             return Response({"Error": "AI Model not found."}, status=status.HTTP_404_NOT_FOUND)
+
+    @swagger_auto_schema(responses={404: "District not found."})
+    def predict(self, request, district_id=None):
+        try:
+            district = District.objects.get(pk=district_id)
+            model = AIModel.objects.first()
+
+            query = "SELECT * FROM weather_data WHERE id = %s"
+            df = pd.read_sql_query(query, connection, params=[district_id])
+
+        except District.DoesNotExist:
+            return Response({"Error": "District not found."}, status=status.HTTP_404_NOT_FOUND)
 
 
 class AIAllergyAttackPredictionView(ModelViewSet):
