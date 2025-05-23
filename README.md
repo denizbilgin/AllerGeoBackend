@@ -35,30 +35,10 @@
 - Developed following **clean code** principles
 - A public API for weather data providers will be launched soon
 
-## 🔧 Setup Instructions
-
-```bash
-git clone https://github.com/yourusername/allergeo-backend.git
-cd allergeo-backend
-pip install -r requirements.txt
-python manage.py migrate
-python manage.py runserver
-```
-
 Mobile app repository (Flutter):  
 🔗 [AllerGeo Mobile Frontend](https://github.com/denizbilgin/AllerGeoFrontend)
-
-## 📈 Broader Impact
-
-- Public dataset and AI model for allergy research
-- Practical tool for health-conscious and allergy-sensitive travelers
-- Spin-off/start-up potential with planned application to **TÜBİTAK BİGG** entrepreneurship program
 
 ## 👨‍🔬 Contributors
 
 - **Deniz Bilgin** – Developer & Project Lead  
 - **Assoc. Prof. Dr. Barış Ethem Süzek** – Academic Advisor
-
-## 📃 License
-
-This project is licensed under the MIT License. See the `LICENSE` file for details.
