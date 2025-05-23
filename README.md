@@ -42,5 +42,5 @@ Mobile app repository (Flutter):
 
 ## 👨‍🔬 Contributors
 
-- **Deniz Bilgin** – Developer & Project Lead  
+- **Deniz Bilgin** – Developer & Project Owner  
 - **Assoc. Prof. Dr. Barış Ethem Süzek** – Academic Advisor & Mentor
