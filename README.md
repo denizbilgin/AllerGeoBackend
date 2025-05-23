@@ -1,6 +1,8 @@
 # AllerGeo 🌿📱  
 *A mobile app that simplifies travel and daily life by tracking allergens for allergic persons*
 
+![AllerGeo Banner](AllerGeo_Banner.jpg)
+
 ## 🧭 About the Project
 
 **AllerGeo** is a mobile health-tech application designed to help individuals with allergies plan their daily routines and travels more comfortably. By analyzing environmental allergen data such as pollen, dust, and mold, AllerGeo provides personalized alerts and recommendations based on the user's allergy profile and location.
