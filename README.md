@@ -1,7 +1,7 @@
 # AllerGeo 🌿📱  
 *A mobile app that simplifies travel and daily life by tracking allergens for allergic persons*
 
-![AllerGeo Banner](AllerGeo_Banner.jpg)
+<img src="AllerGeo_Banner.jpg" alt="AllerGeo Banner" width="450">
 
 ## 🧭 About the Project
 
