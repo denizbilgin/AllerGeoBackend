@@ -5,13 +5,13 @@
 
 ## 🧭 About the Project
 
-**AllerGeo** is a mobile health-tech application designed to help individuals with allergies plan their daily routines and travels more comfortably. By analyzing environmental allergen data such as pollen, dust, and mold, AllerGeo provides personalized alerts and recommendations based on the user's allergy profile and location.
+**AllerGeo** is a mobile health-tech application designed to help individuals with allergies plan their daily routines and travels more comfortably. By analyzing environmental allergen data such as pollen, dust, and mold, AllerGeo provides personalized alerts and recommendations based on the user's allergy profile and location. Additionally, the AI model developed in this project is the first AI model in the literature that predicts allergen concentration for future dates.
 
 ## 🚀 Project Status
 
 - 📱 **Reached MVP stage**
 - 📅 Scheduled for release on mobile platforms in **Summer 2025**
-- 🧠 Developed an **LSTM-based AI model** with an impressive **R² score of 0.89**
+- 🧠 Developed an **LSTM-based AI model** (the first AI model in the literature that predicts allergen concentration for future dates) with an impressive **R² score of 0.89**
 - 🏆 Supported by the **TÜBİTAK 2209-A** University Students Research Project Grant
 
 ## 🏗️ Tech Stack
