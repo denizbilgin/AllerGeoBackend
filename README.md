@@ -1,5 +1,5 @@
 # AllerGeo 🌿📱  
-*A mobile app that simplifies travel and daily life by tracking allergens*
+*A mobile app that simplifies travel and daily life by tracking allergens for allergic persons*
 
 ## 🧭 About the Project
 
