@@ -1,11 +1,5 @@
-import csv
-import json
-import os
 from abc import ABC, abstractmethod
-from datetime import datetime
-import numpy as np
 import pandas as pd
-from sklearn.metrics import cohen_kappa_score
 
 
 class Predictor(ABC):

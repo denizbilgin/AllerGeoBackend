@@ -1,6 +1,8 @@
 from django.db import models
 from django.utils.timezone import now
-from places.models import District
+from sklearn.preprocessing import MinMaxScaler
+
+from places.models import District, City
 from predictors.abstracts.DataPreprocessor import DataPreprocessor
 from predictors.abstracts.Predictor import Predictor
 from users.models import AllergicUser, Travel
@@ -168,8 +170,7 @@ class GeneralLSTMModel(Predictor):
         print(f"Model saved to: {path}")
 
     def load_model(self, filename: str):
-        path = os.path.join('models', filename)
-        self.model = load_model(path, custom_objects={'r2_score_keras': self.r2_score_keras})
+        self.model = load_model(filename, custom_objects={'r2_score_keras': self.r2_score_keras})
         self.__compile()
 
     def fine_tune(self, x: pd.DataFrame, y: pd.DataFrame, epochs: int = 5, save_fine_tuned=False):
@@ -273,10 +274,9 @@ class GeneralLSTMModel(Predictor):
 class WeatherDataPreprocessor(DataPreprocessor):
     def __init__(self, data: pd.DataFrame):
         super().__init__(data)
-        self.db_handler = DatabaseHandler()
         self.ordinal_columns: list[str] = []
 
-    def preprocess(self, test_size: float = 0.2, random_state: int = None, pca_components: float = None) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+    def preprocess(self, test_size: float = 0.2, pca_components: float = None) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
         self.__preprocess_dates()
         self.__create_useful_columns()
         self.__eliminate_columns()
@@ -284,7 +284,7 @@ class WeatherDataPreprocessor(DataPreprocessor):
         self.__normalize()
         self.info()
 
-        x_train, x_test, y_train, y_test = self.__separate_data(test_size=test_size, random_state=random_state)
+        x_train, x_test, y_train, y_test = self.__separate_data(test_size=test_size)
 
         if pca_components is not None:
             pca = PCA(n_components=pca_components)
@@ -387,7 +387,8 @@ class WeatherDataPreprocessor(DataPreprocessor):
 
     def __create_useful_columns(self):
         # CityRegion Column
-        cities = self.db_handler.fetch_data('cities')[['id', 'region_id']]
+        cities = City.objects.all().values('id', 'region_id')
+        cities = pd.DataFrame(list(cities))
         self.data = self.data.merge(cities[['id', 'region_id']], left_on='CityId', right_on='id', how='left')
         self.data['CityRegion'] = self.data['region_id']
         self.data.drop(columns=['id', 'region_id'], inplace=True)
@@ -401,7 +402,7 @@ class WeatherDataPreprocessor(DataPreprocessor):
         scaler = MinMaxScaler()
         self.data[numeric_columns] = scaler.fit_transform(self.data[numeric_columns])
 
-    def __separate_data(self, test_size: float = 0.2, random_state: int = None) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+    def __separate_data(self, test_size: float = 0.2) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
         columns_to_predict = self.data.filter(like='AirAndPollen', axis=1).copy()
         columns_to_predict.drop(columns=['AirAndPollen_UVIndex', 'AirAndPollen_AirQuality'], inplace=True)
         target = columns_to_predict.copy()

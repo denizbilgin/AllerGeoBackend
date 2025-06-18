@@ -1,3 +1,5 @@
+import numpy as np
+from rest_framework.exceptions import ValidationError
 from rest_framework.viewsets import ViewSet, ModelViewSet
 from django.db import connection
 from common.FundamentalPermission import FundamentalPermission
@@ -8,6 +10,8 @@ import rest_framework.status as status
 from rest_framework import mixins
 from rest_framework.parsers import MultiPartParser, FormParser
 from drf_yasg import openapi
+from datetime import datetime, timedelta
+from predictors.models import WeatherDataPreprocessor, GeneralLSTMModel
 from predictors.serializers import *
 
 
@@ -106,17 +110,66 @@ class AIModelView(ModelViewSet, mixins.CreateModelMixin):
         except AIModel.DoesNotExist:
             return Response({"Error": "AI Model not found."}, status=status.HTTP_404_NOT_FOUND)
 
-    @swagger_auto_schema(responses={404: "District not found."})
-    def predict(self, request, district_id=None):
+    @swagger_auto_schema(responses={404: "District or AI Model not found.", 200: 'Success'})
+    def predict(self, request, district_id=None, target_date=None):
         try:
             district = District.objects.get(pk=district_id)
-            model = AIModel.objects.first()
 
-            query = "SELECT * FROM weather_data WHERE id = %s"
-            df = pd.read_sql_query(query, connection, params=[district_id])
+            target_date = datetime.strptime(target_date, "%Y-%m-%d").date()
+            if target_date > datetime.today().date() + timedelta(days=30) or target_date < datetime.today().date():
+                raise ValidationError("The maximum forecast period is next 30 days.")
+
+
+            query = 'SELECT * FROM weather_data WHERE "DistrictId" = %s ORDER BY "Date"'
+            district_weather_data = pd.read_sql_query(query, connection, params=[district_id])
+
+            data_preprocessor = WeatherDataPreprocessor(district_weather_data)
+            x_train, _, y_train, _ = data_preprocessor.preprocess(0)
+
+            params = {
+                'sequence_length': 7,
+                'hidden_units': 64,
+                'batch_size': 28,
+                'epochs': 20,
+                'learning_rate': 0.003,
+                'dropout_rate': 0.2,
+                'optimizer': 'adam'
+            }
+
+            lstm_model = GeneralLSTMModel(**params)
+            lstm_model.load_model(AIModel.objects.first().file_path.path)
+            lstm_model.fine_tune(x_train, y_train)
+
+            feature_columns = [col for col in x_train.columns if col not in ['DistrictId', 'CityId', 'Year', 'Month', 'Day']]
+            prediction_data = x_train[feature_columns].copy()
+
+            current_date = datetime.today().date()
+            predictions_dict = {}
+
+            while current_date < target_date:
+                last_n_days_df = prediction_data.iloc[-params['sequence_length']:]
+                prediction = lstm_model.predict(last_n_days_df)
+
+                predictions_dict[current_date + timedelta(days=1)] = {
+                    "DustAndDander": int(prediction[0]),
+                    "Grass": int(prediction[1]),
+                    "Mold": int(prediction[2]),
+                    "Ragweed": int(prediction[3]),
+                    "Tree": int(prediction[4]),
+                }
+                current_date += timedelta(days=1)
+
+            if target_date in predictions_dict:
+                results = predictions_dict[target_date]
+                results["date"] = target_date.isoformat()
+                return Response(results, status=status.HTTP_200_OK)
+            else:
+                return Response({"Error": "Tahmin yapılamadı."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         except District.DoesNotExist:
             return Response({"Error": "District not found."}, status=status.HTTP_404_NOT_FOUND)
+        except AIModel.DoesNotExist:
+            return Response({"Error": "AI Model not found."}, status=status.HTTP_404_NOT_FOUND)
 
 
 class AIAllergyAttackPredictionView(ModelViewSet):
